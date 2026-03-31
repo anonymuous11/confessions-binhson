@@ -20,23 +20,20 @@
 <div id="list"></div>
 
 <script>
-// 🔒 PASSWORD
-const PASSWORD = "123456"; // đổi tại đây
+// 🔐 ===== THÊM PASSWORD Ở ĐÂY =====
+const PASSWORD = "123123@@qq"; // đổi mật khẩu tại đây
 
-// kiểm tra login
-if(localStorage.getItem("isAdmin") !== "true"){
-    let pass = prompt("Nhập mật khẩu admin:");
+let pass = prompt("Nhập mật khẩu admin:");
 
-    if(pass === PASSWORD){
-        localStorage.setItem("isAdmin","true");
-    } else {
-        alert("Sai mật khẩu!");
-        document.body.innerHTML = "<h2>Access Denied</h2>";
-        throw new Error("Blocked");
-    }
+if(pass !== PASSWORD){
+    alert("Sai mật khẩu!");
+    document.body.innerHTML = "<h2>Access Denied</h2>";
+    throw new Error("Blocked");
 }
+// 🔐 ===== HẾT PHẦN PASSWORD =====
 
-// Firebase config
+
+// ===== CODE CŨ GIỮ NGUYÊN =====
 const firebaseConfig = {
     apiKey: "AIzaSy...",
     authDomain: "binhson-confessions.firebaseapp.com",
@@ -48,7 +45,6 @@ firebase.initializeApp(firebaseConfig);
 
 const postsRef = firebase.database().ref("confessions");
 
-// load bài viết
 postsRef.on("value", snapshot => {
     const list = document.getElementById("list");
     list.innerHTML = "";
@@ -66,17 +62,10 @@ postsRef.on("value", snapshot => {
     });
 });
 
-// xoá bài
 function deletePost(key) {
     if (confirm("Xoá bài này?")) {
         postsRef.child(key).remove();
     }
-}
-
-// 🔓 logout (tuỳ chọn)
-function logout(){
-    localStorage.removeItem("isAdmin");
-    location.reload();
 }
 </script>
 
