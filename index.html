@@ -263,6 +263,14 @@ function postData(){
     document.getElementById("agreeRule").checked=false;
 }
 
+// format thời gian
+function formatTime(ts){
+    if(!ts) return "";
+    const d = new Date(ts);
+    const options = { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' };
+    return d.toLocaleString('vi-VN', options);
+}
+
 // load post
 postsRef.on("child_added", snap=>{
     renderPost(snap.key,snap.val());
@@ -274,7 +282,7 @@ function renderPost(id,post){
     div.className="card";
 
     div.innerHTML=`
-        <b>Ẩn danh</b><br>
+        <b>Ẩn danh</b> • <small>${formatTime(post.timestamp)}</small><br>
         ${post.content || ""}
 
         <div>
