@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bình Sơn Confessions</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background:#f0f2f5;
+    margin:0;
+}
+
+.container {
+    max-width:600px;
+    margin:auto;
+    padding:10px;
+}
+
+/* LOGO */
+.logo {
+    text-align:center;
+}
+.logo img {
+    width:60px;
+    border-radius:50%;
+}
+
+/* POST BOX */
+.post-box {
+    background:white;
+    padding:10px;
+    border-radius:10px;
+}
+
+.post-top {
+    display:flex;
+    cursor:pointer;
+}
+
+.avatar {
+    width:40px;height:40px;
+    border-radius:50%;
+    background:#ddd;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.fake-input {
+    margin-left:10px;
+    background:#f0f2f5;
+    padding:10px;
+    border-radius:20px;
+    flex:1;
+}
+
+textarea {
+    width:100%;
+    margin-top:10px;
+    font-size:16px;
+}
+
+/* POST */
+.card {
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    margin-top:12px;
+}
+
+/* ACTIONS */
+.actions {
+    display:flex;
+    justify-content:space-around;
+    margin-top:10px;
+    border-top:1px solid #ddd;
+    padding-top:8px;
+    font-size:14px;
+}
+
+.actions span {
+    cursor:pointer;
+}
+
+/* COMMENT */
+.comment-box {
+    display:none;
+    margin-top:10px;
+}
+
+.comment {
+    background:#f0f2f5;
+    padding:8px;
+    border-radius:8px;
+    margin-top:6px;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width:100%;
+
+    border-left:2px solid #ddd;
+}
+
+.link-btn {
+    color:#1877f2;
+    font-size:13px;
+    cursor:pointer;
+}
+
+/* MOBILE */
+@media (max-width:500px){
+    .container { padding:5px; }
+    .card { padding:10px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="logo">
+    <img src="pic/logo.jpeg">
+    <h3>Bình Sơn Confessions</h3>
+</div>
+
+<!-- POST -->
+<div class="post-box">
+    <div class="post-top" onclick="openPost()">
+        <div class="avatar">🙂</div>
+        <div class="fake-input">Bạn đang nghĩ gì?</div>
+    </div>
+
+    <div id="realPost" style="display:none;">
+        <textarea id="content" rows="3"></textarea>
+        <button onclick="postData()">Đăng</button>
+    </div>
+</div>
+
+<div id="list"></div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSy...",
+    authDomain: "binhson-confessions.firebaseapp.com",
+    databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "binhson-confessions"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const postsRef = db.ref("confessions");
+
+// 👤 tên cố định
+function getUserName(){
+    let name = localStorage.getItem("anonName");
+    if(!name){
+        name = "Ẩn danh " + Math.floor(Math.random()*1000);
+        localStorage.setItem("anonName",name);
+    }
+    return name;
+}
+
+// mở post box
+function openPost(){
+    document.getElementById("realPost").style.display="block";
+}
+
+// đăng bài
+function postData(){
+    const text = document.getElementById("content").value.trim();
+    if(!text) return;
+
+    postsRef.push({
+        content:text,
+        timestamp:Date.now()
+    });
+
+    document.getElementById("content").value="";
+}
+
+// load post
+postsRef.on("child_added", snap=>{
+    renderPost(snap.key,snap.val());
+});
+
+// render post
+function renderPost(id,post){
+    const div = document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
+        <b>Ẩn danh</b><br>
+        ${post.content || ""}
+
+        <div>
+            👍 <span id="like-${id}">0</span>
+            💬 <span id="cmtCount-${id}">0</span>
+        </div>
+
+        <div class="actions">
+            <span onclick="likePost('${id}')">👍 Like</span>
+            <span onclick="toggleComment('${id}')">💬 Comment</span>
+            <span onclick="sharePost('${id}')">🔗 Share</span>
+        </div>
+
+        <div id="comments-${id}" class="comment-box">
+            <input id="cmt-${id}" placeholder="Viết bình luận...">
+            <button onclick="addComment('${id}')">Gửi</button>
+            <div id="list-cmt-${id}"></div>
+        </div>
+    `;
+
+    document.getElementById("list").prepend(div);
+
+    // like
+    db.ref("confessions/"+id+"/likes")
+    .on("value", s=>{
+        document.getElementById("like-"+id).innerText = s.val()||0;
+    });
+
+    // count comment
+    db.ref("confessions/"+id+"/comments")
+    .on("value", s=>{
+        document.getElementById("cmtCount-"+id).innerText = countAll(s.val());
+    });
+
+    // load comment
+    db.ref("confessions/"+id+"/comments")
+    .on("value", snap=>{
+        const container = document.getElementById("list-cmt-"+id);
+        container.innerHTML = "";
+
+        if(!snap.exists()) return;
+
+        snap.forEach(child=>{
+            renderComment(id, child.key, child.val(), container, 0);
+        });
+    });
+}
+
+// đếm comment
+function countAll(obj){
+    let count=0;
+    function dfs(n){
+        if(!n) return;
+        for(let k in n){
+            count++;
+            if(n[k].replies) dfs(n[k].replies);
+        }
+    }
+    dfs(obj);
+    return count;
+}
+
+// render comment
+function renderComment(postId,cmtId,cmt,parentDiv,level){
+    if(!cmt || !cmt.text) return;
+
+    const div = document.createElement("div");
+    div.className="comment";
+
+    const offset = Math.min(level*15, 40); // 🔥 fix tràn
+    div.style.marginLeft = offset+"px";
+
+    div.innerHTML=`
+        <b>${cmt.name}</b>: ${cmt.text}
+
+        <div>
+            <span onclick="toggleReply('${cmtId}')" class="link-btn">Trả lời</span>
+        </div>
+
+        <div id="replyBox-${cmtId}" style="display:none;">
+            <input id="reply-${cmtId}" placeholder="Trả lời...">
+            <button onclick="addReply('${postId}','${cmtId}')">Gửi</button>
+        </div>
+
+        <div id="child-${cmtId}"></div>
+    `;
+
+    parentDiv.appendChild(div);
+
+    // load reply
+    db.ref(`confessions/${postId}/comments/${cmtId}/replies`)
+    .on("value", snap=>{
+        const container = document.getElementById("child-"+cmtId);
+        container.innerHTML = "";
+
+        if(!snap.exists()) return;
+
+        snap.forEach(child=>{
+            renderComment(postId, child.key, child.val(), container, level+1);
+        });
+    });
+}
+
+// like
+function likePost(id){
+    db.ref("confessions/"+id+"/likes")
+    .transaction(x => (x||0)+1);
+}
+
+// comment
+function addComment(id){
+    const input = document.getElementById("cmt-"+id);
+    const text = input.value.trim();
+    if(!text) return;
+
+    db.ref("confessions/"+id+"/comments").push({
+        name:getUserName(),
+        text:text
+    });
+
+    input.value="";
+}
+
+// reply
+function addReply(postId,parentId){
+    const input = document.getElementById("reply-"+parentId);
+    const text = input.value.trim();
+    if(!text) return;
+
+    db.ref(`confessions/${postId}/comments/${parentId}/replies`).push({
+        name:getUserName(),
+        text:text
+    });
+
+    input.value="";
+}
+
+// toggle
+function toggleComment(id){
+    const box = document.getElementById("comments-"+id);
+    box.style.display = box.style.display==="block"?"none":"block";
+}
+
+function toggleReply(id){
+    const box = document.getElementById("replyBox-"+id);
+    box.style.display = box.style.display==="block"?"none":"block";
+}
+
+// share
+function sharePost(id){
+    const link = location.href + "#post-"+id;
+    navigator.clipboard.writeText(link);
+    alert("Đã copy link!");
+}
+</script>
+
+</body>
+</html>

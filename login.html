@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+    body { font-family: Arial; padding: 20px; }
+    .post { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    button { margin-top: 5px; }
+</style>
+</head>
+
+<body>
+
+<h2>Admin Panel</h2>
+<div id="list"></div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSy...",
+    authDomain: "binhson-confessions.firebaseapp.com",
+    databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "binhson-confessions"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const postsRef = firebase.database().ref("confessions");
+
+postsRef.on("value", snapshot => {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    snapshot.forEach(child => {
+        const post = child.val();
+        const key = child.key;
+
+        list.innerHTML += `
+            <div class="post">
+                ${post.content}<br>
+                <button onclick="deletePost('${key}')">Xoá</button>
+            </div>
+        `;
+    });
+});
+
+function deletePost(key) {
+    if (confirm("Xoá bài này?")) {
+        postsRef.child(key).remove();
+    }
+}
+</script>
+
+</body>
+</html>
