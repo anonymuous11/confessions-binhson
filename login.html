@@ -2,55 +2,87 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login</title>
 
 <style>
-    body { font-family: Arial; padding: 20px; }
-    .post { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    button { margin-top: 5px; }
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg,#4facfe,#00f2fe);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:0;
+}
+
+.box {
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    width:300px;
+    text-align:center;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+h2 { margin-bottom:15px; }
+
+input {
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+button {
+    width:100%;
+    padding:10px;
+    margin-top:15px;
+    border:none;
+    border-radius:8px;
+    background:#1877f2;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+
+button:hover {
+    background:#0d6efd;
+}
+
+.error {
+    color:red;
+    margin-top:10px;
+    font-size:13px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Admin Panel</h2>
-<div id="list"></div>
+<div class="box">
+    <h2>Admin Login</h2>
+    <input type="password" id="pass" placeholder="Nhập mật khẩu">
+    <button onclick="login()">Đăng nhập</button>
+    <div id="error" class="error"></div>
+</div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSy...",
-    authDomain: "binhson-confessions.firebaseapp.com",
-    databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    projectId: "binhson-confessions"
-};
+const PASSWORD = "123123@@qq"; // 🔒 đổi mật khẩu tại đây
 
-firebase.initializeApp(firebaseConfig);
+function login(){
+    const input = document.getElementById("pass").value;
 
-const postsRef = firebase.database().ref("confessions");
+    if(input === PASSWORD){
+        // lưu trạng thái đăng nhập
+        localStorage.setItem("isAdmin","true");
 
-postsRef.on("value", snapshot => {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    snapshot.forEach(child => {
-        const post = child.val();
-        const key = child.key;
-
-        list.innerHTML += `
-            <div class="post">
-                ${post.content}<br>
-                <button onclick="deletePost('${key}')">Xoá</button>
-            </div>
-        `;
-    });
-});
-
-function deletePost(key) {
-    if (confirm("Xoá bài này?")) {
-        postsRef.child(key).remove();
+        // chuyển sang admin
+        window.location.href = "admin.html";
+    } else {
+        document.getElementById("error").innerText = "Sai mật khẩu!";
     }
 }
 </script>
