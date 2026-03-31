@@ -13,12 +13,35 @@ body {
     font-family: Arial;
     background:#f0f2f5;
     margin:0;
+    padding:0;
 }
 
+/* NỘI QUY CỐ ĐỊNH */
+.rules-box-fixed {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 250px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-size: 14px;
+    z-index: 1000;
+}
+
+.rules-box-fixed h3 {
+    margin-top:0;
+}
+
+/* CONTAINER CHÍNH */
 .container {
-    max-width:600px;
-    margin:auto;
-    padding:10px;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 10px;
 }
 
 /* LOGO */
@@ -63,6 +86,9 @@ textarea {
     width:100%;
     margin-top:10px;
     font-size:16px;
+    border-radius:8px;
+    padding:8px;
+    border:1px solid #ccc;
 }
 
 /* POST */
@@ -98,11 +124,9 @@ textarea {
     padding:8px;
     border-radius:8px;
     margin-top:6px;
-
     word-wrap: break-word;
     overflow-wrap: break-word;
     max-width:100%;
-
     border-left:2px solid #ddd;
 }
 
@@ -112,15 +136,40 @@ textarea {
     cursor:pointer;
 }
 
+/* CHECKBOX NỘI QUY */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    margin-top:10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-label input {
+    margin-right: 8px;
+}
+
 /* MOBILE */
 @media (max-width:500px){
     .container { padding:5px; }
     .card { padding:10px; }
+    .rules-box-fixed { display:none; }
 }
 </style>
 </head>
 
 <body>
+
+<!-- NỘI QUY CỐ ĐỊNH -->
+<div class="rules-box-fixed">
+    <h3>📜 Nội quy</h3>
+    <ul>
+        <li>Chat chít vui vẻ nha mấy cậu</li>
+        <li>Không sử dụng ngôn từ thô tục hoặc xúc phạm</li>
+        <li>Confessions được tạo ra với mục đích học tập, và tán crush =))) </li>
+        <!-- Bạn tự điền nội quy ở đây -->
+    </ul>
+</div>
 
 <div class="container">
 
@@ -137,7 +186,13 @@ textarea {
     </div>
 
     <div id="realPost" style="display:none;">
-        <textarea id="content" rows="3"></textarea>
+        <textarea id="content" rows="3" placeholder="Viết tâm sự..."></textarea>
+
+        <label class="checkbox-label">
+            <input type="checkbox" id="agreeRule">
+            Tôi đã đọc và đồng ý với nội quy
+        </label>
+
         <button onclick="postData()">Đăng</button>
     </div>
 </div>
@@ -148,7 +203,7 @@ textarea {
 
 <script>
 const firebaseConfig = {
-    apiKey: "AIzaSy...",
+    apiKey: "AIzaSy...", // điền key thật của bạn
     authDomain: "binhson-confessions.firebaseapp.com",
     databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
     projectId: "binhson-confessions"
@@ -173,10 +228,31 @@ function openPost(){
     document.getElementById("realPost").style.display="block";
 }
 
+// danh sách từ cấm
+const badWords = ["dm","đm","cc","lol"];
+function isBad(text){
+    return badWords.some(w => text.toLowerCase().includes(w));
+}
+
 // đăng bài
 function postData(){
     const text = document.getElementById("content").value.trim();
-    if(!text) return;
+    const agree = document.getElementById("agreeRule").checked;
+
+    if(!text){
+        alert("Nhập nội dung đi bro 😅");
+        return;
+    }
+
+    if(!agree){
+        alert("Bạn phải đồng ý nội quy trước!");
+        return;
+    }
+
+    if(isBad(text)){
+        alert("Nội dung không phù hợp!");
+        return;
+    }
 
     postsRef.push({
         content:text,
@@ -184,6 +260,7 @@ function postData(){
     });
 
     document.getElementById("content").value="";
+    document.getElementById("agreeRule").checked=false;
 }
 
 // load post
@@ -267,7 +344,7 @@ function renderComment(postId,cmtId,cmt,parentDiv,level){
     const div = document.createElement("div");
     div.className="comment";
 
-    const offset = Math.min(level*15, 40); // 🔥 fix tràn
+    const offset = Math.min(level*15, 40); // fix tràn
     div.style.marginLeft = offset+"px";
 
     div.innerHTML=`
@@ -313,6 +390,11 @@ function addComment(id){
     const text = input.value.trim();
     if(!text) return;
 
+    if(isBad(text)){
+        alert("Nội dung không phù hợp!");
+        return;
+    }
+
     db.ref("confessions/"+id+"/comments").push({
         name:getUserName(),
         text:text
@@ -326,6 +408,11 @@ function addReply(postId,parentId){
     const input = document.getElementById("reply-"+parentId);
     const text = input.value.trim();
     if(!text) return;
+
+    if(isBad(text)){
+        alert("Nội dung không phù hợp!");
+        return;
+    }
 
     db.ref(`confessions/${postId}/comments/${parentId}/replies`).push({
         name:getUserName(),
