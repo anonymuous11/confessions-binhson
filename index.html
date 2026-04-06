@@ -1,1 +1,251 @@
-đang update
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>Diễn đàn trò chuyện ẩn danh</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; line-height: 1.34; color: #1c1e21; }
+.container { max-width: 680px; margin: 0 auto; padding: 16px; }
+
+.rules-box-fixed { position: fixed; top: 20px; left: 20px; width: 280px; background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); font-size: 13px; z-index: 1000; border: 1px solid #e4e6eb; }
+.rules-box-fixed h3 { font-size: 15px; margin-bottom: 12px; }
+.rules-box-fixed ul { padding-left: 20px; }
+.rules-box-fixed li { margin: 8px 0; color: #65676b; }
+
+.header { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.logo-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
+.post-box { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; }
+.post-top { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.2s; }
+.post-top:hover { background: #f5f5f5; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: #e4e6eb; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.fake-input { margin-left: 12px; background: #f0f2f5; padding: 10px 16px; border-radius: 40px; flex: 1; color: #65676b; font-size: 15px; }
+
+#realPost { padding: 16px; border-top: 1px solid #e4e6eb; display: none; }
+textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; border: 1px solid #e4e6eb; font-family: inherit; resize: vertical; margin-bottom: 12px; }
+.btn-post { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
+
+.card { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.post-header { padding: 12px 16px; }
+.post-author { font-weight: 600; font-size: 15px; }
+.post-time { font-size: 13px; color: #65676b; margin-left: 8px; }
+.post-number { font-weight: 600; color: #1877f2; margin-right: 6px; }
+.today-badge { background: #e7f3ff; color: #1877f2; font-size: 12px; padding: 2px 8px; border-radius: 12px; margin-left: 8px; }
+.post-content { padding: 0 16px 12px; font-size: 15px; line-height: 1.5; }
+.post-stats { padding: 8px 16px; border-top: 1px solid #e4e6eb; display: flex; justify-content: space-between; font-size: 13px; color: #65676b; }
+.post-actions { display: flex; border-top: 1px solid #e4e6eb; }
+.post-actions button { flex: 1; background: none; border: none; padding: 10px; font-weight: 600; color: #65676b; cursor: pointer; }
+.post-actions button:hover { background: #f0f2f5; }
+
+.comment-section { padding: 12px 16px; border-top: 1px solid #e4e6eb; background: #fff; display: none; }
+.comment-input-wrapper { display: flex; gap: 8px; margin-bottom: 12px; }
+.comment-input-wrapper input { flex: 1; border: none; background: #f0f2f5; padding: 8px 16px; border-radius: 20px; font-size: 14px; }
+.comment-node { margin-bottom: 12px; }
+.comment-main { display: flex; gap: 8px; }
+.comment-bubble { background: #f0f2f5; border-radius: 18px; padding: 8px 12px; flex: 1; }
+.comment-name { font-weight: 600; font-size: 13px; }
+.comment-text { font-size: 14px; margin-top: 2px; }
+.comment-actions { margin-top: 4px; font-size: 12px; color: #65676b; font-weight: 600; }
+.comment-actions span { cursor: pointer; margin-right: 12px; }
+.reply-children { margin-left: 40px; margin-top: 8px; border-left: 2px solid #e4e6eb; padding-left: 10px; }
+.reply-input-box { margin-left: 40px; margin-top: 8px; display: none; }
+.reply-input-box input { width: 100%; background: #f0f2f5; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
+
+@media (max-width: 768px) { .rules-box-fixed { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="rules-box-fixed">
+    <h3>📜 Nội quy diễn đàn</h3>
+    <ul>
+        <li>💬 Chat vui vẻ, tôn trọng</li>
+        <li>🚫 Không từ ngữ thô tục</li>
+        <li>📚 Phục vụ học tập</li>
+        <li>🔒 Mọi bài viết ẩn danh</li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="header">
+        <img src="pic/logo.jpeg" alt="logo" class="logo-img">
+        <h2>Diễn Đàn Ẩn Danh</h2>
+    </div>
+
+    <div class="post-box">
+        <div class="post-top" onclick="openPost()">
+            <div class="avatar">🙂</div>
+            <div class="fake-input">Bạn đang nghĩ gì?</div>
+        </div>
+        <div id="realPost">
+            <textarea id="content" rows="3" placeholder="Chia sẻ suy nghĩ của bạn..."></textarea>
+            <label style="display: flex; align-items: center; font-size: 13px; margin-bottom: 10px;">
+                <input type="checkbox" id="agreeRule" style="margin-right: 8px;"> Tôi đồng ý với nội quy
+            </label>
+            <button class="btn-post" onclick="postData()">Đăng bài</button>
+        </div>
+    </div>
+
+    <div id="list"></div>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSy...", 
+    authDomain: "binhson-confessions.firebaseapp.com",
+    databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "binhson-confessions"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const postsRef = db.ref("confessions");
+
+let postCounter = 0;
+
+function getUserName() {
+    let name = localStorage.getItem("anonName");
+    if (!name) {
+        name = "Ẩn danh " + Math.floor(Math.random() * 10000);
+        localStorage.setItem("anonName", name);
+    }
+    return name;
+}
+
+function openPost() { document.getElementById("realPost").style.display = "block"; }
+
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+function formatTime(ts) {
+    if (!ts) return "";
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return "Vừa xong";
+    if (diff < 3600) return Math.floor(diff / 60) + " phút trước";
+    if (diff < 86400) return Math.floor(diff / 3600) + " giờ trước";
+    return new Date(ts).toLocaleDateString('vi-VN');
+}
+function isToday(ts) { return new Date(ts).toDateString() === new Date().toDateString(); }
+
+function postData() {
+    const text = document.getElementById("content").value.trim();
+    if (!text || !document.getElementById("agreeRule").checked) {
+        alert("Vui lòng nhập nội dung và đồng ý nội quy!"); return;
+    }
+    postsRef.push({ content: text, timestamp: Date.now(), likes: 0 });
+    document.getElementById("content").value = "";
+    document.getElementById("realPost").style.display = 'none';
+}
+
+function toggleComment(id) {
+    const section = document.getElementById(`comment-section-${id}`);
+    if (!section) return;
+    const isHidden = section.style.display === 'none' || section.style.display === '';
+    section.style.display = isHidden ? 'block' : 'none';
+    if (isHidden && section.getAttribute('data-listener') !== 'true') {
+        attachCommentsListener(id);
+        section.setAttribute('data-listener', 'true');
+    }
+}
+
+function attachCommentsListener(postId) {
+    const listDiv = document.getElementById(`comment-list-${postId}`);
+    const countSpan = document.getElementById(`comment-count-${postId}`);
+    db.ref(`confessions/${postId}/comments`).on('value', snap => {
+        const comments = snap.val();
+        countSpan.innerText = comments ? "Đã có người bình luận" : "Chưa có người bình luận";
+        listDiv.innerHTML = '';
+        if (comments) listDiv.appendChild(renderCommentTree(postId, comments));
+    });
+}
+
+function renderCommentTree(postId, commentsObj) {
+    const fragment = document.createDocumentFragment();
+    for (let cmtId in commentsObj) {
+        const cmt = commentsObj[cmtId];
+        const div = document.createElement('div');
+        div.className = 'comment-node';
+        div.innerHTML = `
+            <div class="comment-main">
+                <div class="avatar" style="width:32px; height:32px; font-size:14px;">🙂</div>
+                <div class="comment-bubble">
+                    <div class="comment-name">${escapeHtml(cmt.name)}</div>
+                    <div class="comment-text">${escapeHtml(cmt.text)}</div>
+                    <div class="comment-actions"><span onclick="showReplyBox('${cmtId}')">Trả lời</span></div>
+                </div>
+            </div>
+            <div class="reply-input-box" id="reply-box-${cmtId}">
+                <input type="text" placeholder="Viết trả lời..." onkeypress="if(event.key==='Enter') addReply('${postId}', '${cmtId}', this)">
+            </div>
+            <div class="reply-children" id="replies-${cmtId}"></div>
+        `;
+        if (cmt.replies) div.querySelector('.reply-children').appendChild(renderCommentTree(postId, cmt.replies));
+        fragment.appendChild(div);
+    }
+    return fragment;
+}
+
+function showReplyBox(cmtId) {
+    const box = document.getElementById(`reply-box-${cmtId}`);
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    if (box.style.display === 'block') box.querySelector('input').focus();
+}
+
+function addComment(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const text = input.value.trim();
+    if (!text) return;
+    db.ref(`confessions/${postId}/comments`).push({ name: getUserName(), text, timestamp: Date.now() });
+    input.value = '';
+}
+
+function addReply(postId, parentId, input) {
+    const text = input.value.trim();
+    if (!text) return;
+    db.ref(`confessions/${postId}/comments/${parentId}/replies`).push({ name: getUserName(), text, timestamp: Date.now() });
+    input.value = '';
+    document.getElementById(`reply-box-${parentId}`).style.display = 'none';
+}
+
+function likePost(id) { db.ref(`confessions/${id}/likes`).transaction(c => (c || 0) + 1); }
+
+function renderPost(id, post) {
+    postCounter++;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="post-header">
+            <span class="post-number">#${postCounter}</span>
+            <span class="post-author">Ẩn danh</span>
+            <span class="post-time">${formatTime(post.timestamp)}</span>
+            ${isToday(post.timestamp) ? '<span class="today-badge">Hôm nay</span>' : ''}
+        </div>
+        <div class="post-content">${escapeHtml(post.content)}</div>
+        <div class="post-stats">
+            <span>👍 <span id="like-count-${id}">${post.likes || 0}</span></span>
+            <span>💬 <span id="comment-count-${id}">Chưa có người bình luận</span></span>
+        </div>
+        <div class="post-actions">
+            <button onclick="likePost('${id}')">Thích</button>
+            <button onclick="toggleComment('${id}')">Bình luận</button>
+        </div>
+        <div id="comment-section-${id}" class="comment-section">
+            <div class="comment-input-wrapper">
+                <input type="text" id="comment-input-${id}" placeholder="Viết bình luận..." onkeypress="if(event.key==='Enter') addComment('${id}')">
+            </div>
+            <div id="comment-list-${id}"></div>
+        </div>
+    `;
+    document.getElementById("list").prepend(card);
+    db.ref(`confessions/${id}/likes`).on('value', s => document.getElementById(`like-count-${id}`).innerText = s.val() || 0);
+    attachCommentsListener(id);
+}
+
+postsRef.on("child_added", snap => renderPost(snap.key, snap.val()));
+
+</script>
+</body>
+</html>

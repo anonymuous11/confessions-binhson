@@ -2,38 +2,100 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Quản trị diễn đàn</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <style>
-    body { font-family: Arial; padding: 20px; }
-    .post { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    button { margin-top: 5px; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: auto; }
+    h1, h2 { color: #1e2a3a; }
+    .section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .post-item, .report-item { border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
+    .post-content { background: #f8fafc; padding: 8px; border-radius: 8px; margin: 8px 0; }
+    button { background: #3b82f6; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-right: 8px; }
+    button.danger { background: #ef4444; }
+    button.warning { background: #f59e0b; }
+    button.success { background: #10b981; }
+    .badge { display: inline-block; background: #e2e8f0; padding: 2px 8px; border-radius: 20px; font-size: 12px; margin-left: 8px; }
+    .pinned { background: #fef3c7; color: #b45309; }
+    .flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .report-reason { font-style: italic; color: #4b5563; margin-top: 4px; }
+    hr { margin: 16px 0; }
+
+    .notification-area { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+    .notification-bell {
+        background: white;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+        position: relative;
+    }
+    .notification-bell:hover { transform: scale(1.05); background: #fef9e3; }
+    .bell-icon { font-size: 26px; }
+    .badge-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ef4444;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 5px;
+        border: 2px solid white;
+    }
+    @media (max-width: 640px) {
+        .notification-area { top: 10px; right: 10px; }
+        .notification-bell { width: 40px; height: 40px; }
+        .bell-icon { font-size: 22px; }
+    }
 </style>
 </head>
-
 <body>
 
-<h2>Admin Panel</h2>
-<div id="list"></div>
+<div class="notification-area">
+    <div class="notification-bell" id="notificationBell" onclick="scrollToReports()">
+        <span class="bell-icon">🔔</span>
+        <span id="reportBadge" class="badge-count" style="display: none;">0</span>
+    </div>
+</div>
+
+<div class="container">
+    <h1>🔐 Admin Panel</h1>
+    <div class="section">
+        <h2>📌 Quản lý bài viết & Ghim</h2>
+        <div id="postsList"></div>
+    </div>
+    <div class="section" id="reportsSection">
+        <h2>🚨 Báo cáo từ người dùng</h2>
+        <div id="reportsList"></div>
+    </div>
+</div>
 
 <script>
-// 🔐 ===== THÊM PASSWORD Ở ĐÂY =====
-const PASSWORD = "123123@@qq"; // đổi mật khẩu tại đây
-
+const PASSWORD = "123123@@qq";
 let pass = prompt("Nhập mật khẩu admin:");
-
 if(pass !== PASSWORD){
     alert("Sai mật khẩu!");
     document.body.innerHTML = "<h2>Access Denied</h2>";
     throw new Error("Blocked");
 }
-// 🔐 ===== HẾT PHẦN PASSWORD =====
 
-
-// ===== CODE CŨ GIỮ NGUYÊN =====
 const firebaseConfig = {
     apiKey: "AIzaSy...",
     authDomain: "binhson-confessions.firebaseapp.com",
@@ -42,32 +104,136 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const postsRef = db.ref("confessions");
+const reportsRef = db.ref("reports");
 
-const postsRef = firebase.database().ref("confessions");
-
-postsRef.on("value", snapshot => {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    snapshot.forEach(child => {
-        const post = child.val();
-        const key = child.key;
-
-        list.innerHTML += `
-            <div class="post">
-                ${post.content}<br>
-                <button onclick="deletePost('${key}')">Xoá</button>
-            </div>
-        `;
+function updateReportBadge() {
+    reportsRef.once('value', (snapshot) => {
+        let totalReports = 0;
+        if (snapshot.exists()) {
+            snapshot.forEach((postReports) => {
+                postReports.forEach(() => totalReports++);
+            });
+        }
+        const badge = document.getElementById("reportBadge");
+        if (totalReports > 0) {
+            badge.textContent = totalReports > 99 ? "99+" : totalReports;
+            badge.style.display = "flex";
+        } else {
+            badge.style.display = "none";
+        }
     });
+}
+
+reportsRef.on('value', () => {
+    updateReportBadge();
+    loadReports();
 });
 
-function deletePost(key) {
-    if (confirm("Xoá bài này?")) {
-        postsRef.child(key).remove();
+function loadPosts() {
+    postsRef.on('value', snapshot => {
+        const container = document.getElementById("postsList");
+        container.innerHTML = "";
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p>Chưa có bài viết nào.</p>";
+            return;
+        }
+        const posts = [];
+        snapshot.forEach(child => {
+            const post = child.val();
+            post.id = child.key;
+            if (post.postNumber) posts.push(post);
+        });
+        // Sắp xếp theo postNumber tăng dần để dễ quản lý
+        posts.sort((a,b) => a.postNumber - b.postNumber);
+        posts.forEach(post => {
+            const div = document.createElement("div");
+            div.className = "post-item";
+            div.innerHTML = `
+                <div class="flex">
+                    <strong>#${post.postNumber}</strong>
+                    <span class="badge ${post.pinned ? 'pinned' : ''}">${post.pinned ? '📌 Đã ghim' : 'Chưa ghim'}</span>
+                </div>
+                <div class="post-content">${escapeHtml(post.content)}</div>
+                <div class="flex">
+                    <span>👍 ${post.likes || 0} | 💬 ${post.comments ? Object.keys(post.comments).length : 0}</span>
+                    <div>
+                        ${!post.pinned ? `<button class="success" onclick="togglePin('${post.id}', true)">📌 Ghim</button>` : `<button class="warning" onclick="togglePin('${post.id}', false)">📌 Bỏ ghim</button>`}
+                        <button class="danger" onclick="deletePost('${post.id}')">🗑 Xóa bài</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    });
+}
+
+function deletePost(postId) {
+    if (confirm("Xóa bài viết này?")) {
+        postsRef.child(postId).remove();
+        reportsRef.child(postId).remove();
     }
 }
-</script>
 
+function togglePin(postId, pinStatus) {
+    postsRef.child(postId).update({ pinned: pinStatus });
+}
+
+function loadReports() {
+    reportsRef.once('value', snapshot => {
+        const container = document.getElementById("reportsList");
+        container.innerHTML = "";
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p>✅ Không có báo cáo nào.</p>";
+            return;
+        }
+        snapshot.forEach(postReports => {
+            const postId = postReports.key;
+            postReports.forEach(reportSnap => {
+                const report = reportSnap.val();
+                const div = document.createElement("div");
+                div.className = "report-item";
+                div.innerHTML = `
+                    <div class="flex">
+                        <strong>Bài viết: ${postId.slice(0,8)}...</strong>
+                        <span>👤 ${escapeHtml(report.reporter)}</span>
+                        <span>🕒 ${new Date(report.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="report-reason">📝 Lý do: ${escapeHtml(report.reason)}</div>
+                    <div>
+                        <button class="danger" onclick="deletePost('${postId}')">🗑 Xóa bài viết này</button>
+                        <button onclick="deleteReport('${postId}', '${reportSnap.key}')">✅ Xóa báo cáo này</button>
+                    </div>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        });
+    });
+}
+
+function deleteReport(postId, reportId) {
+    reportsRef.child(`${postId}/${reportId}`).remove();
+}
+
+function scrollToReports() {
+    document.getElementById("reportsSection").scrollIntoView({ behavior: "smooth" });
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+loadPosts();
+loadReports();
+updateReportBadge();
+</script>
 </body>
 </html>
