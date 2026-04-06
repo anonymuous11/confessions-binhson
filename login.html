@@ -3,99 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - Quản trị diễn đàn</title>
+<title>Admin Panel</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-    .container { max-width: 1200px; margin: auto; }
-    h1, h2 { color: #1e2a3a; }
-    .section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .post-item, .report-item { border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
-    .post-content { background: #f8fafc; padding: 8px; border-radius: 8px; margin: 8px 0; }
-    button { background: #3b82f6; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-right: 8px; }
-    button.danger { background: #ef4444; }
-    button.warning { background: #f59e0b; }
-    button.success { background: #10b981; }
-    .badge { display: inline-block; background: #e2e8f0; padding: 2px 8px; border-radius: 20px; font-size: 12px; margin-left: 8px; }
-    .pinned { background: #fef3c7; color: #b45309; }
-    .flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .report-reason { font-style: italic; color: #4b5563; margin-top: 4px; }
-    hr { margin: 16px 0; }
+body { font-family: Arial; background: #f4f6f9; padding: 20px; }
+.container { max-width: 1000px; margin: auto; }
+.section { background: white; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+.card { border-bottom: 1px solid #ddd; padding: 10px 0; }
+button { margin: 5px; padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; }
+.danger { background: red; color: white; }
+.success { background: green; color: white; }
+.warning { background: orange; color: white; }
 
-    .notification-area { position: fixed; top: 20px; right: 20px; z-index: 1000; }
-    .notification-bell {
-        background: white;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.2s;
-        position: relative;
-    }
-    .notification-bell:hover { transform: scale(1.05); background: #fef9e3; }
-    .bell-icon { font-size: 26px; }
-    .badge-count {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #ef4444;
-        color: white;
-        font-size: 12px;
-        font-weight: bold;
-        min-width: 20px;
-        height: 20px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 5px;
-        border: 2px solid white;
-    }
-    @media (max-width: 640px) {
-        .notification-area { top: 10px; right: 10px; }
-        .notification-bell { width: 40px; height: 40px; }
-        .bell-icon { font-size: 22px; }
-    }
+.badge { padding: 3px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px; }
+.pinned { background: gold; }
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+.badge-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    padding: 2px 6px;
+}
 </style>
 </head>
 <body>
 
-<div class="notification-area">
-    <div class="notification-bell" id="notificationBell" onclick="scrollToReports()">
-        <span class="bell-icon">🔔</span>
-        <span id="reportBadge" class="badge-count" style="display: none;">0</span>
-    </div>
+<div class="notification" onclick="scrollToReports()">
+    🔔 <span id="badge" class="badge-count" style="display:none">0</span>
 </div>
 
 <div class="container">
-    <h1>🔐 Admin Panel</h1>
+    <h2>🔐 Admin Panel</h2>
+
     <div class="section">
-        <h2>📌 Quản lý bài viết & Ghim</h2>
-        <div id="postsList"></div>
+        <h3>📌 Bài viết</h3>
+        <div id="posts"></div>
     </div>
+
     <div class="section" id="reportsSection">
-        <h2>🚨 Báo cáo từ người dùng</h2>
-        <div id="reportsList"></div>
+        <h3>🚨 Báo cáo</h3>
+        <div id="reports"></div>
     </div>
 </div>
 
 <script>
+// 🔐 PASSWORD
 const PASSWORD = "123123@@qq";
-let pass = prompt("Nhập mật khẩu admin:");
-if(pass !== PASSWORD){
-    alert("Sai mật khẩu!");
-    document.body.innerHTML = "<h2>Access Denied</h2>";
-    throw new Error("Blocked");
+if(prompt("Nhập mật khẩu") !== PASSWORD){
+    document.body.innerHTML = "Access Denied";
+    throw "";
 }
 
+// 🔥 Firebase
 const firebaseConfig = {
     apiKey: "AIzaSy...",
     authDomain: "binhson-confessions.firebaseapp.com",
@@ -108,132 +84,151 @@ const db = firebase.database();
 const postsRef = db.ref("confessions");
 const reportsRef = db.ref("reports");
 
-function updateReportBadge() {
-    reportsRef.once('value', (snapshot) => {
-        let totalReports = 0;
-        if (snapshot.exists()) {
-            snapshot.forEach((postReports) => {
-                postReports.forEach(() => totalReports++);
-            });
-        }
-        const badge = document.getElementById("reportBadge");
-        if (totalReports > 0) {
-            badge.textContent = totalReports > 99 ? "99+" : totalReports;
-            badge.style.display = "flex";
-        } else {
-            badge.style.display = "none";
-        }
-    });
+// 📌 GHIM
+function togglePin(id, status){
+    postsRef.child(id).update({ pinned: status });
 }
 
-reportsRef.on('value', () => {
-    updateReportBadge();
-    loadReports();
-});
-
-function loadPosts() {
-    postsRef.on('value', snapshot => {
-        const container = document.getElementById("postsList");
-        container.innerHTML = "";
-        if (!snapshot.exists()) {
-            container.innerHTML = "<p>Chưa có bài viết nào.</p>";
-            return;
-        }
-        const posts = [];
-        snapshot.forEach(child => {
-            const post = child.val();
-            post.id = child.key;
-            if (post.postNumber) posts.push(post);
-        });
-        // Sắp xếp theo postNumber tăng dần để dễ quản lý
-        posts.sort((a,b) => a.postNumber - b.postNumber);
-        posts.forEach(post => {
-            const div = document.createElement("div");
-            div.className = "post-item";
-            div.innerHTML = `
-                <div class="flex">
-                    <strong>#${post.postNumber}</strong>
-                    <span class="badge ${post.pinned ? 'pinned' : ''}">${post.pinned ? '📌 Đã ghim' : 'Chưa ghim'}</span>
-                </div>
-                <div class="post-content">${escapeHtml(post.content)}</div>
-                <div class="flex">
-                    <span>👍 ${post.likes || 0} | 💬 ${post.comments ? Object.keys(post.comments).length : 0}</span>
-                    <div>
-                        ${!post.pinned ? `<button class="success" onclick="togglePin('${post.id}', true)">📌 Ghim</button>` : `<button class="warning" onclick="togglePin('${post.id}', false)">📌 Bỏ ghim</button>`}
-                        <button class="danger" onclick="deletePost('${post.id}')">🗑 Xóa bài</button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    });
-}
-
-function deletePost(postId) {
-    if (confirm("Xóa bài viết này?")) {
-        postsRef.child(postId).remove();
-        reportsRef.child(postId).remove();
+// 🗑 XÓA
+function deletePost(id){
+    if(confirm("Xóa bài này?")){
+        postsRef.child(id).remove();
+        reportsRef.child(id).remove();
     }
 }
 
-function togglePin(postId, pinStatus) {
-    postsRef.child(postId).update({ pinned: pinStatus });
+// 🔢 Đếm comment (có reply)
+function countComments(obj){
+    if(!obj) return 0;
+    let count = 0;
+    for(let key in obj){
+        count++;
+        if(obj[key].replies){
+            count += countComments(obj[key].replies);
+        }
+    }
+    return count;
 }
 
-function loadReports() {
-    reportsRef.once('value', snapshot => {
-        const container = document.getElementById("reportsList");
-        container.innerHTML = "";
-        if (!snapshot.exists()) {
-            container.innerHTML = "<p>✅ Không có báo cáo nào.</p>";
-            return;
-        }
-        snapshot.forEach(postReports => {
-            const postId = postReports.key;
-            postReports.forEach(reportSnap => {
-                const report = reportSnap.val();
-                const div = document.createElement("div");
-                div.className = "report-item";
-                div.innerHTML = `
-                    <div class="flex">
-                        <strong>Bài viết: ${postId.slice(0,8)}...</strong>
-                        <span>👤 ${escapeHtml(report.reporter)}</span>
-                        <span>🕒 ${new Date(report.timestamp).toLocaleString()}</span>
-                    </div>
-                    <div class="report-reason">📝 Lý do: ${escapeHtml(report.reason)}</div>
-                    <div>
-                        <button class="danger" onclick="deletePost('${postId}')">🗑 Xóa bài viết này</button>
-                        <button onclick="deleteReport('${postId}', '${reportSnap.key}')">✅ Xóa báo cáo này</button>
-                    </div>
-                    <hr>
-                `;
-                container.appendChild(div);
-            });
+// 🧠 LOAD POSTS + SỐ THỨ TỰ
+postsRef.on("value", snap => {
+    const container = document.getElementById("posts");
+    container.innerHTML = "";
+
+    const posts = [];
+
+    snap.forEach(child => {
+        const p = child.val();
+        p.id = child.key;
+        posts.push(p);
+    });
+
+    // 📌 ghim + mới nhất
+    posts.sort((a,b)=>{
+        if(a.pinned && !b.pinned) return -1;
+        if(!a.pinned && b.pinned) return 1;
+        return b.timestamp - a.timestamp;
+    });
+
+    let counter = posts.length;
+
+    posts.forEach(p=>{
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <b>#${counter--} ${p.pinned ? "📌" : ""}</b>
+            <div style="margin:5px 0">${escapeHtml(p.content)}</div>
+            👍 ${p.likes || 0} | 💬 ${countComments(p.comments)}
+            <br>
+            <button class="${p.pinned ? 'warning':'success'}"
+                onclick="togglePin('${p.id}', ${!p.pinned})">
+                ${p.pinned ? "Bỏ ghim":"Ghim"}
+            </button>
+            <button class="danger" onclick="deletePost('${p.id}')">Xóa</button>
+        `;
+
+        container.appendChild(div);
+    });
+});
+
+// 🚨 LOAD REPORT + HIỆN NỘI DUNG BÀI
+reportsRef.on("value", async snap=>{
+    const container = document.getElementById("reports");
+    container.innerHTML = "";
+
+    let total = 0;
+
+    if(!snap.exists()){
+        container.innerHTML = "Không có báo cáo";
+        document.getElementById("badge").style.display="none";
+        return;
+    }
+
+    for (let postSnap of Object.values(snap.val())) {}
+
+    snap.forEach(post=>{
+        const postId = post.key;
+
+        post.forEach(async r=>{
+            total++;
+
+            const data = r.val();
+
+            // 🔥 lấy nội dung bài viết
+            const postDataSnap = await postsRef.child(postId).once("value");
+            const postData = postDataSnap.val();
+
+            const div = document.createElement("div");
+            div.className = "card";
+
+            div.innerHTML = `
+                <b>Bài: ${postId.slice(0,8)}...</b>
+                <div style="background:#f1f1f1;padding:6px;border-radius:6px;margin:5px 0">
+                    ${postData ? escapeHtml(postData.content) : "❌ Bài đã bị xóa"}
+                </div>
+                👤 ${escapeHtml(data.reporter)}
+                <br>📝 ${escapeHtml(data.reason)}
+                <br>🕒 ${new Date(data.timestamp).toLocaleString()}
+                <br>
+                <button class="danger" onclick="deletePost('${postId}')">Xóa bài</button>
+                <button onclick="deleteReport('${postId}','${r.key}')">Xóa báo cáo</button>
+            `;
+
+            container.appendChild(div);
         });
     });
-}
 
-function deleteReport(postId, reportId) {
+    // 🔔 badge
+    const badge = document.getElementById("badge");
+    if(total > 0){
+        badge.innerText = total > 99 ? "99+" : total;
+        badge.style.display = "inline-block";
+    } else {
+        badge.style.display = "none";
+    }
+});
+
+// ❌ xóa report
+function deleteReport(postId, reportId){
     reportsRef.child(`${postId}/${reportId}`).remove();
 }
 
-function scrollToReports() {
-    document.getElementById("reportsSection").scrollIntoView({ behavior: "smooth" });
+// 📍 scroll
+function scrollToReports(){
+    document.getElementById("reportsSection").scrollIntoView({behavior:"smooth"});
 }
 
-function escapeHtml(str) {
-    if (!str) return "";
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
+// 🔒 escape
+function escapeHtml(str){
+    if(!str) return "";
+    return str.replace(/[&<>]/g, m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;"
+    })[m]);
 }
-
-loadPosts();
-loadReports();
-updateReportBadge();
 </script>
+
 </body>
 </html>
