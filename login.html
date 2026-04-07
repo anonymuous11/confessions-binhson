@@ -304,17 +304,25 @@ function deletePost(postId) {
 function loadReports() {
     reportsRef.once("value", async (snapshot) => {
         allReports = [];
-        
-        for (let postSnap of Object.values(snapshot.val() || {})) {
-            const postId = postSnap.key;
+
+        const data = snapshot.val();
+        if (!data) {
+            renderReports([]);
+            return;
+        }
+
+        for (let postId in data) {
+            const reportsOfPost = data[postId];
+
             // Lấy nội dung bài viết
-            const postData = await postsRef.child(postId).once("value");
-            const postContent = postData.val() ? postData.val().content : "❌ Bài viết đã bị xóa";
-            
-            for (let reportSnap of Object.values(postSnap.val() || {})) {
-                const report = reportSnap;
+            const postSnap = await postsRef.child(postId).once("value");
+            const postContent = postSnap.val() ? postSnap.val().content : "❌ Bài viết đã bị xóa";
+
+            for (let reportId in reportsOfPost) {
+                const report = reportsOfPost[reportId];
+
                 allReports.push({
-                    id: reportSnap.key,
+                    id: reportId,
                     postId: postId,
                     postContent: postContent,
                     reason: report.reason,
@@ -323,8 +331,7 @@ function loadReports() {
                 });
             }
         }
-        
-        // Sắp xếp theo thời gian mới nhất
+
         allReports.sort((a, b) => b.timestamp - a.timestamp);
         renderReports(allReports);
     });
