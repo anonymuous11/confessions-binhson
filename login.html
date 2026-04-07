@@ -203,6 +203,16 @@ const announcementsRef = db.ref("announcements");
 let allPosts = [];
 let allReports = [];
 
+// ========== HÀM ĐẾM COMMENT CẤP 1 (CHỈ ĐẾM COMMENT CHA, KHÔNG TÍNH REPLY) ==========
+function countTopLevelComments(commentsObj) {
+    if (!commentsObj) return 0;
+    let count = 0;
+    for (let key in commentsObj) {
+        count++; // Chỉ đếm comment cha, không đếm reply con
+    }
+    return count;
+}
+
 // ========== CHUYỂN TAB ==========
 function switchTab(tab) {
     document.querySelectorAll('.section').forEach(section => {
@@ -246,6 +256,9 @@ function renderPosts(posts) {
     
     container.innerHTML = "";
     posts.forEach((post, index) => {
+        // SỬA: Dùng countTopLevelComments thay vì countAllComments
+        const commentCount = countTopLevelComments(post.comments);
+        
         const div = document.createElement("div");
         div.className = "post-card";
         div.innerHTML = `
@@ -256,7 +269,7 @@ function renderPosts(posts) {
             <div class="post-content">${escapeHtml(post.content)}</div>
             <div class="post-stats">
                 <span>👍 ${post.likes || 0} lượt thích</span>
-                <span>💬 ${countAllComments(post.comments)} bình luận</span>
+                <span>💬 ${commentCount} bình luận</span>
             </div>
             <div class="post-actions">
                 <button class="btn btn-danger" onclick="deletePost('${post.id}')">🗑 Xóa bài viết</button>
@@ -447,9 +460,9 @@ async function loadStats() {
             todayPosts++;
         }
         
-        // Đếm comment
+        // SỬA: Đếm comment cấp 1 (không tính reply)
         if (post.comments) {
-            const commentCount = countAllComments(post.comments);
+            const commentCount = countTopLevelComments(post.comments);
             totalComments += commentCount;
         }
         
@@ -483,18 +496,6 @@ function extractUsersFromComments(commentsObj, usersSet) {
 }
 
 // ========== HÀM TIỆN ÍCH ==========
-function countAllComments(commentsObj) {
-    if (!commentsObj) return 0;
-    let count = 0;
-    for (let key in commentsObj) {
-        count++;
-        if (commentsObj[key].replies) {
-            count += countAllComments(commentsObj[key].replies);
-        }
-    }
-    return count;
-}
-
 function escapeHtml(text) {
     if (!text) return "";
     return text.replace(/[&<>]/g, m => ({
