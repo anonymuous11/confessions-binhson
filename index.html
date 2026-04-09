@@ -18,10 +18,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
 .rules-box-fixed ul { padding-left: 20px; }
 .rules-box-fixed li { margin: 8px 0; color: #65676b; }
 
-.header { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.header { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
 .logo-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
+.online-badge { 
+    position: absolute; 
+    top: 16px; 
+    right: 16px; 
+    background: #e7f3ff; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    color: #1877f2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.online-dot { width: 10px; height: 10px; background: #31a24c; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
 
-/* Ô thông báo riêng */
 .announcement-box {
     background: linear-gradient(135deg, #fff3e0 0%, #ffe8cc 100%);
     border-radius: 12px;
@@ -32,53 +47,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
     display: none;
     position: relative;
 }
-.announcement-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-.announcement-header h3 {
-    font-size: 16px;
-    color: #e65100;
-}
-.announcement-content {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 12px;
-}
-.announcement-time {
-    font-size: 11px;
-    color: #999;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.close-announcement {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #999;
-    padding: 0 8px;
-}
-.close-announcement:hover {
-    color: #333;
-}
-.snooze-btn {
-    background: none;
-    border: 1px solid #ff9800;
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 11px;
-    cursor: pointer;
-    color: #ff9800;
-}
-.snooze-btn:hover {
-    background: #ff9800;
-    color: white;
-}
+.announcement-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.announcement-header h3 { font-size: 16px; color: #e65100; }
+.announcement-content { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 12px; }
+.announcement-time { font-size: 11px; color: #999; display: flex; justify-content: space-between; align-items: center; }
+.close-announcement { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 0 8px; }
 
 .post-box { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; }
 .post-top { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.2s; }
@@ -137,6 +110,10 @@ textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; bord
     <div class="header">
         <img src="pic/logo.jpeg" alt="logo" class="logo-img" onerror="this.src='https://via.placeholder.com/50'">
         <h2>Diễn Đàn Ẩn Danh</h2>
+        <div class="online-badge" id="onlineBadge">
+            <span class="online-dot"></span>
+            <span id="onlineCount">0</span> người đang online
+        </div>
     </div>
 
     <!-- Ô thông báo riêng từ admin -->
@@ -187,15 +164,54 @@ const db = firebase.database();
 const postsRef = db.ref("confessions");
 const reportsRef = db.ref("reports");
 const announcementsRef = db.ref("announcements");
+const onlineRef = db.ref(".info/connected");
+const presenceRef = db.ref("presence");
 
-let postCounter = 0;
+let currentUserId = null;
+let myPresenceRef = null;
 
-// ========== HÀM ĐẾM COMMENT CẤP 1 (KHÔNG TÍNH REPLY) ==========
+// ========== ONLINE / PRESENCE ==========
+function initPresence() {
+    currentUserId = getUserName();
+    // Tạo reference cho user hiện tại
+    myPresenceRef = presenceRef.child(currentUserId);
+    
+    // Khi kết nối, set giá trị online và tự động xóa khi disconnect
+    onlineRef.on("value", (snap) => {
+        if (snap.val()) {
+            // User online, set presence với timestamp
+            myPresenceRef.set({
+                online: true,
+                lastSeen: Date.now(),
+                name: currentUserId
+            });
+            // Khi disconnect, tự động xóa node này
+            myPresenceRef.onDisconnect().remove();
+        }
+    });
+    
+    // Lắng nghe số lượng người online (những node presence tồn tại)
+    presenceRef.on("value", (snap) => {
+        let onlineUsers = 0;
+        if (snap.exists()) {
+            const data = snap.val();
+            // Đếm số user đang online (online === true hoặc chỉ cần tồn tại node)
+            for (let key in data) {
+                if (data[key] && data[key].online !== false) {
+                    onlineUsers++;
+                }
+            }
+        }
+        document.getElementById("onlineCount").innerText = onlineUsers;
+    });
+}
+
+// ========== HÀM ĐẾM COMMENT CẤP 1 ==========
 function countTopLevelComments(commentsObj) {
     if (!commentsObj) return 0;
     let count = 0;
     for (let key in commentsObj) {
-        count++; // Chỉ đếm comment cha, không đếm reply con
+        count++;
     }
     return count;
 }
@@ -203,40 +219,23 @@ function countTopLevelComments(commentsObj) {
 // ========== HÀM XỬ LÝ THÔNG BÁO RIÊNG ==========
 function showAnnouncement(message, timestamp, announcementId) {
     const snoozeUntil = localStorage.getItem("announcement_snooze_until");
-    if (snoozeUntil && parseInt(snoozeUntil) > Date.now()) {
-        return;
-    }
-    
+    if (snoozeUntil && parseInt(snoozeUntil) > Date.now()) return;
     const closedId = localStorage.getItem("closed_announcement_id");
-    if (closedId && closedId === announcementId) {
-        return;
-    }
-    
+    if (closedId && closedId === announcementId) return;
     const box = document.getElementById("announcementBox");
     const content = document.getElementById("announcementContent");
     const timeSpan = document.getElementById("announcementTime");
-    
     content.innerHTML = message;
     timeSpan.innerHTML = "🕒 " + new Date(timestamp).toLocaleString('vi-VN');
     box.style.display = "block";
     box.setAttribute("data-current-id", announcementId);
 }
-
 function closeAnnouncement() {
     const box = document.getElementById("announcementBox");
     const currentId = box.getAttribute("data-current-id");
-    if (currentId) {
-        localStorage.setItem("closed_announcement_id", currentId);
-    }
+    if (currentId) localStorage.setItem("closed_announcement_id", currentId);
     box.style.display = "none";
 }
-
-function snoozeAnnouncement() {
-    const snoozeUntil = Date.now() + 3600000;
-    localStorage.setItem("announcement_snooze_until", snoozeUntil);
-    closeAnnouncement();
-}
-
 announcementsRef.on("child_added", (snapshot) => {
     const announcement = snapshot.val();
     if (announcement && announcement.message && announcement.timestamp) {
@@ -251,25 +250,18 @@ function reportPost(postId) {
         alert("Bạn chưa nhập lý do báo cáo!");
         return;
     }
-    
     const reportData = {
         reason: reason.trim(),
         reporter: getUserName(),
         timestamp: Date.now(),
         postId: postId
     };
-    
     reportsRef.child(postId).push(reportData)
-        .then(() => {
-            alert("✅ Cảm ơn bạn đã báo cáo. Quản trị viên sẽ xem xét và xử lý.");
-        })
-        .catch(error => {
-            console.error("Lỗi khi gửi báo cáo:", error);
-            alert("❌ Có lỗi xảy ra, vui lòng thử lại sau!");
-        });
+        .then(() => alert("✅ Cảm ơn bạn đã báo cáo. Quản trị viên sẽ xem xét và xử lý."))
+        .catch(error => console.error("Lỗi khi gửi báo cáo:", error));
 }
 
-// ========== CÁC HÀM HIỆN CÓ ==========
+// ========== CÁC HÀM CƠ BẢN ==========
 function getUserName() {
     let name = localStorage.getItem("anonName");
     if (!name) {
@@ -303,21 +295,50 @@ function isToday(ts) {
     return new Date(ts).toDateString() === new Date().toDateString(); 
 }
 
+// ========== ĐĂNG BÀI MỚI ==========
 function postData() {
     const text = document.getElementById("content").value.trim();
     if (!text || !document.getElementById("agreeRule").checked) {
         alert("Vui lòng nhập nội dung và đồng ý nội quy!"); 
         return;
     }
+    // Khởi tạo likes và likedBy để chống spam like
     postsRef.push({ 
         content: text, 
         timestamp: Date.now(), 
-        likes: 0
+        likes: 0,
+        likedBy: {}  // Lưu danh sách user đã like
     });
     document.getElementById("content").value = "";
     document.getElementById("realPost").style.display = 'none';
 }
 
+// ========== LIKE - MỖI NGƯỜI CHỈ ĐƯỢC LIKE 1 LẦN ==========
+function likePost(postId) {
+    const userId = getUserName();
+    const postRef = db.ref(`confessions/${postId}`);
+    
+    postRef.transaction(post => {
+        if (!post) return post;
+        if (!post.likedBy) post.likedBy = {};
+        
+        if (post.likedBy[userId]) {
+            post.likes = (post.likes || 0) - 1;
+            delete post.likedBy[userId];
+            // Đã xóa alert bỏ thích
+        } else {
+            post.likes = (post.likes || 0) + 1;
+            post.likedBy[userId] = true;
+            // Đã xóa alert thích bài viết
+        }
+        return post;
+    }).catch(err => {
+        console.error("Lỗi like:", err);
+        alert("Có lỗi xảy ra, vui lòng thử lại!"); // Giữ lại alert lỗi để debug
+    });
+}
+
+// ========== BÌNH LUẬN & REPLY ==========
 function toggleComment(id) {
     const section = document.getElementById(`comment-section-${id}`);
     if (!section) return;
@@ -335,10 +356,7 @@ function attachCommentsListener(postId) {
     
     db.ref(`confessions/${postId}/comments`).on('value', snap => {
         const comments = snap.val();
-        // CHỈ ĐẾM COMMENT CẤP 1, KHÔNG TÍNH REPLY
         const count = countTopLevelComments(comments);
-        
-        // Cập nhật hiển thị số lượng bình luận
         if (count === 0) {
             countSpan.innerText = "Chưa có bình luận";
         } else if (count === 1) {
@@ -346,8 +364,6 @@ function attachCommentsListener(postId) {
         } else {
             countSpan.innerText = count + " bình luận";
         }
-        
-        // Render lại danh sách comment
         if (listDiv) {
             listDiv.innerHTML = '';
             if (comments) listDiv.appendChild(renderCommentTree(postId, comments));
@@ -416,11 +432,7 @@ function addReply(postId, parentId, input) {
     if (box) box.style.display = 'none';
 }
 
-function likePost(id) { 
-    db.ref(`confessions/${id}/likes`).transaction(c => (c || 0) + 1);
-}
-
-// Cập nhật số thứ tự
+// ========== CẬP NHẬT SỐ THỨ TỰ BÀI VIẾT ==========
 function updatePostNumbers() {
     const cards = document.querySelectorAll('#list .card');
     const total = cards.length;
@@ -430,12 +442,12 @@ function updatePostNumbers() {
             numberSpan.innerText = `#${total - index}`;
         }
     });
-    postCounter = total;
 }
 
-// Render bài viết
+// ========== RENDER BÀI VIẾT ==========
 function renderPost(id, post) {
     if (document.querySelector(`.card[data-id="${id}"]`)) {
+        // Cập nhật like count nếu có thay đổi
         const likeSpan = document.getElementById(`like-count-${id}`);
         if (likeSpan && likeSpan.innerText != (post.likes || 0)) {
             likeSpan.innerText = post.likes || 0;
@@ -443,14 +455,13 @@ function renderPost(id, post) {
         return;
     }
     
-    postCounter++;
     const card = document.createElement('div');
     card.className = 'card';
     card.setAttribute('data-id', id);
     
     card.innerHTML = `
         <div class="post-header">
-            <span class="post-number">#${postCounter}</span>
+            <span class="post-number">#?</span>
             <span class="post-author">Ẩn danh</span>
             <span class="post-time">${formatTime(post.timestamp)}</span>
             ${isToday(post.timestamp) ? '<span class="today-badge">Hôm nay</span>' : ''}
@@ -475,43 +486,18 @@ function renderPost(id, post) {
     
     const list = document.getElementById("list");
     list.prepend(card);
+    updatePostNumbers();
     
+    // Lắng nghe thay đổi likes
     db.ref(`confessions/${id}/likes`).on('value', s => {
         const likeSpan = document.getElementById(`like-count-${id}`);
         if (likeSpan) likeSpan.innerText = s.val() || 0;
     });
     
     attachCommentsListener(id);
-    updatePostNumbers();
 }
 
-// Lắng nghe bài viết mới
-postsRef.on("child_added", (snapshot) => {
-    if (!document.querySelector(`.card[data-id="${snapshot.key}"]`)) {
-        renderPost(snapshot.key, snapshot.val());
-    }
-});
-
-// Lắng nghe thay đổi like
-postsRef.on("child_changed", (snapshot) => {
-    const post = snapshot.val();
-    const postId = snapshot.key;
-    const likeSpan = document.getElementById(`like-count-${postId}`);
-    if (likeSpan && likeSpan.innerText != (post.likes || 0)) {
-        likeSpan.innerText = post.likes || 0;
-    }
-});
-
-// Lắng nghe xóa bài
-postsRef.on("child_removed", (snapshot) => {
-    const card = document.querySelector(`.card[data-id="${snapshot.key}"]`);
-    if (card) {
-        card.remove();
-        updatePostNumbers();
-    }
-});
-
-// Load bài viết hiện có
+// ========== LOAD BÀI VIẾT HIỆN CÓ ==========
 function loadExistingPosts() {
     postsRef.once("value", (snapshot) => {
         const posts = [];
@@ -522,7 +508,7 @@ function loadExistingPosts() {
             });
         });
         
-        posts.sort((a, b) => b.timestamp - a.timestamp);
+        posts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
         const list = document.getElementById("list");
         list.innerHTML = '';
@@ -567,15 +553,41 @@ function loadExistingPosts() {
             
             attachCommentsListener(post.id);
         });
-        
-        postCounter = posts.length;
     });
 }
 
-// Khởi động
-loadExistingPosts();
+// Lắng nghe bài viết mới
+postsRef.on("child_added", (snapshot) => {
+    if (!document.querySelector(`.card[data-id="${snapshot.key}"]`)) {
+        renderPost(snapshot.key, snapshot.val());
+        updatePostNumbers();
+    }
+});
 
-console.log("✅ Diễn đàn đã sẵn sàng!");
+// Lắng nghe thay đổi like
+postsRef.on("child_changed", (snapshot) => {
+    const post = snapshot.val();
+    const postId = snapshot.key;
+    const likeSpan = document.getElementById(`like-count-${postId}`);
+    if (likeSpan && likeSpan.innerText != (post.likes || 0)) {
+        likeSpan.innerText = post.likes || 0;
+    }
+});
+
+// Lắng nghe xóa bài
+postsRef.on("child_removed", (snapshot) => {
+    const card = document.querySelector(`.card[data-id="${snapshot.key}"]`);
+    if (card) {
+        card.remove();
+        updatePostNumbers();
+    }
+});
+
+// ========== KHỞI ĐỘNG ==========
+loadExistingPosts();
+initPresence();  // Khởi tạo tính năng online
+
+console.log("✅ Diễn đàn đã sẵn sàng! - Mỗi người chỉ like được 1 lần - Hiển thị số người online");
 </script>
 </body>
 </html>
