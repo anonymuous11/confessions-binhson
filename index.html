@@ -110,10 +110,10 @@ textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; bord
 <div class="rules-box-fixed">
     <h3>📜 Nội quy diễn đàn</h3>
     <ul>
-        <li>💬 Chat vui vẻ, tôn trọng</li>
-        <li>🚫 Không từ ngữ thô tục</li>
-        <li>📚 Phục vụ học tập</li>
-        <li>🔒 Mọi bài viết ẩn danh</li>
+        <li>Chat vui vẻ, tôn trọng</li>
+        <li>Không từ ngữ thô tục</li>
+        <li>Phục vụ học tập</li>
+        <li>Mọi bài viết ẩn danh</li>
     </ul>
 </div>
 
@@ -485,7 +485,7 @@ function renderPost(id, post) {
         <div class="post-actions">
             <button onclick="likePost('${id}')">👍 Thích</button>
             <button onclick="toggleComment('${id}')">💬 Bình luận</button>
-            <button onclick="reportPost('${id}')">🚨 Báo cáo</button>
+            <button onclick="reportPost('${id}')">❌ Báo cáo</button>
         </div>
         <div id="comment-section-${id}" class="comment-section">
             <div class="comment-input-wrapper">
@@ -545,7 +545,7 @@ function loadExistingPosts() {
                 <div class="post-actions">
                     <button onclick="likePost('${post.id}')">👍 Thích</button>
                     <button onclick="toggleComment('${post.id}')">💬 Bình luận</button>
-                    <button onclick="reportPost('${post.id}')">🚨 Báo cáo</button>
+                    <button onclick="reportPost('${post.id}')">❌ Báo cáo</button>
                 </div>
                 <div id="comment-section-${post.id}" class="comment-section">
                     <div class="comment-input-wrapper">
