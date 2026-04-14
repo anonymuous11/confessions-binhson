@@ -1,3 +1,4 @@
+<!-- FILE: login.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -37,13 +38,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .stat-card .number { color: white; font-size: 32px; font-weight: bold; }
 
 /* Bài viết & Báo cáo */
-.post-card, .report-card { background: #3d3d5c; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-.post-header, .report-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #4d4d6c; }
-.post-id, .report-id { color: #667eea; font-family: monospace; font-size: 12px; }
-.post-meta, .report-meta { color: #aaa; font-size: 12px; }
+.post-card, .report-card, .pending-card { background: #3d3d5c; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+.post-header, .report-header, .pending-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #4d4d6c; }
+.post-id, .report-id, .pending-id { color: #667eea; font-family: monospace; font-size: 12px; }
+.post-meta, .report-meta, .pending-meta { color: #aaa; font-size: 12px; }
 .post-content { color: white; font-size: 15px; line-height: 1.5; margin: 12px 0; padding: 10px; background: #2d2d44; border-radius: 8px; }
 .post-stats { display: flex; gap: 20px; margin: 10px 0; color: #aaa; font-size: 13px; }
-.post-actions, .report-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.post-actions, .report-actions, .pending-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 
 /* Nút bấm */
 .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
@@ -78,6 +79,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 .badge-pending { background: #ed8936; color: white; }
 .badge-resolved { background: #48bb78; color: white; }
+.badge-waiting { background: #e53e3e; color: white; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
@@ -88,7 +90,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
 @media (max-width: 768px) {
     .header { flex-direction: column; text-align: center; }
     .tabs { justify-content: center; }
-    .post-header, .report-header { flex-direction: column; align-items: flex-start; }
+    .post-header, .report-header, .pending-header { flex-direction: column; align-items: flex-start; }
 }
 </style>
 </head>
@@ -101,14 +103,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('posts')">📝 Bài viết</button>
+        <button class="tab-btn active" onclick="switchTab('pending')">⏳ Chờ duyệt <span id="pendingBadge" style="background:#e53e3e;padding:2px 8px;border-radius:12px;margin-left:8px;font-size:11px;">0</span></button>
+        <button class="tab-btn" onclick="switchTab('posts')">📝 Bài viết</button>
         <button class="tab-btn" onclick="switchTab('reports')">🚨 Báo cáo</button>
         <button class="tab-btn" onclick="switchTab('announcements')">📢 Thông báo</button>
         <button class="tab-btn" onclick="switchTab('stats')">📊 Thống kê</button>
     </div>
 
-    <!-- Tab Bài viết -->
-    <div id="postsTab" class="section active">
+    <!-- Tab Bài viết chờ duyệt -->
+    <div id="pendingTab" class="section active">
+        <div class="section-title">⏳ Bài viết chờ duyệt</div>
+        <div class="search-box">
+            <input type="text" id="searchPending" placeholder="🔍 Tìm kiếm bài viết chờ duyệt..." onkeyup="filterPending()">
+        </div>
+        <div id="pendingList"></div>
+    </div>
+
+    <!-- Tab Bài viết đã duyệt -->
+    <div id="postsTab" class="section">
         <div class="section-title">📝 Quản lý bài viết</div>
         <div class="search-box">
             <input type="text" id="searchPost" placeholder="🔍 Tìm kiếm bài viết theo nội dung..." onkeyup="filterPosts()">
@@ -168,6 +180,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial
                 <h3>📅 Bài viết hôm nay</h3>
                 <div class="number" id="todayPosts">0</div>
             </div>
+            <div class="stat-card">
+                <h3>⏳ Bài viết chờ duyệt</h3>
+                <div class="number" id="pendingCount">0</div>
+            </div>
         </div>
     </div>
 </div>
@@ -197,18 +213,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const postsRef = db.ref("confessions");
+const pendingPostsRef = db.ref("pending_posts");
 const reportsRef = db.ref("reports");
 const announcementsRef = db.ref("announcements");
 
 let allPosts = [];
 let allReports = [];
+let allPending = [];
 
-// ========== HÀM ĐẾM COMMENT CẤP 1 (CHỈ ĐẾM COMMENT CHA, KHÔNG TÍNH REPLY) ==========
+// ========== HÀM ĐẾM COMMENT ==========
 function countTopLevelComments(commentsObj) {
     if (!commentsObj) return 0;
     let count = 0;
     for (let key in commentsObj) {
-        count++; // Chỉ đếm comment cha, không đếm reply con
+        count++;
     }
     return count;
 }
@@ -225,13 +243,99 @@ function switchTab(tab) {
     document.getElementById(`${tab}Tab`).classList.add('active');
     event.target.classList.add('active');
     
+    if (tab === 'pending') loadPendingPosts();
     if (tab === 'posts') loadPosts();
     if (tab === 'reports') loadReports();
     if (tab === 'announcements') loadAnnouncements();
     if (tab === 'stats') loadStats();
 }
 
-// ========== QUẢN LÝ BÀI VIẾT ==========
+// ========== QUẢN LÝ BÀI VIẾT CHỜ DUYỆT ==========
+function loadPendingPosts() {
+    pendingPostsRef.once("value", (snapshot) => {
+        allPending = [];
+        snapshot.forEach(child => {
+            allPending.push({
+                id: child.key,
+                ...child.val()
+            });
+        });
+        allPending.sort((a, b) => b.timestamp - a.timestamp);
+        renderPendingPosts(allPending);
+        
+        // Cập nhật badge
+        document.getElementById("pendingBadge").innerText = allPending.length;
+    });
+}
+
+function renderPendingPosts(pending) {
+    const container = document.getElementById("pendingList");
+    if (!pending.length) {
+        container.innerHTML = '<div style="color:#aaa;text-align:center;padding:40px;">✅ Không có bài viết nào chờ duyệt</div>';
+        return;
+    }
+    
+    container.innerHTML = "";
+    pending.forEach((post, index) => {
+        const div = document.createElement("div");
+        div.className = "pending-card";
+        div.innerHTML = `
+            <div class="pending-header">
+                <span class="pending-id">#${pending.length - index} | ID: ${post.id.substring(0, 8)}...</span>
+                <span class="pending-meta">🕒 ${new Date(post.timestamp).toLocaleString('vi-VN')}</span>
+            </div>
+            <div class="post-content">${escapeHtml(post.content)}</div>
+            <div style="margin: 5px 0; color: #aaa; font-size: 12px;">
+                👤 Người gửi: ${escapeHtml(post.authorName || "Ẩn danh")}
+            </div>
+            <div class="pending-actions">
+                <button class="btn btn-success" onclick="approvePost('${post.id}', '${escapeHtml(post.content)}', ${post.timestamp}, '${escapeHtml(post.authorName || "Ẩn danh")}')">✅ Duyệt & Đăng</button>
+                <button class="btn btn-danger" onclick="rejectPost('${post.id}')">❌ Từ chối & Xóa</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function filterPending() {
+    const keyword = document.getElementById("searchPending").value.toLowerCase();
+    if (!keyword) {
+        renderPendingPosts(allPending);
+        return;
+    }
+    const filtered = allPending.filter(post => post.content.toLowerCase().includes(keyword));
+    renderPendingPosts(filtered);
+}
+
+// Duyệt bài - KHÔNG CONFIRM, duyệt ngay lập tức
+function approvePost(pendingId, content, timestamp, authorName) {
+    // Thêm vào confessions ngay lập tức, không cần xác nhận
+    postsRef.push({
+        content: content,
+        timestamp: timestamp,
+        likes: 0,
+        likedBy: {},
+        approvedBy: "Admin",
+        approvedAt: Date.now()
+    }).then(() => {
+        // Xóa khỏi pending_posts
+        pendingPostsRef.child(pendingId).remove();
+        loadPendingPosts();
+        loadStats();
+    }).catch(error => {
+        console.error("Lỗi:", error);
+        alert("❌ Có lỗi xảy ra khi duyệt bài!");
+    });
+}
+
+// Từ chối bài - KHÔNG CONFIRM, xóa ngay lập tức
+function rejectPost(pendingId) {
+    pendingPostsRef.child(pendingId).remove();
+    loadPendingPosts();
+    loadStats();
+}
+
+// ========== QUẢN LÝ BÀI VIẾT ĐÃ DUYỆT ==========
 function loadPosts() {
     postsRef.once("value", (snapshot) => {
         allPosts = [];
@@ -241,7 +345,6 @@ function loadPosts() {
                 ...child.val()
             });
         });
-        // Sắp xếp theo thời gian mới nhất
         allPosts.sort((a, b) => b.timestamp - a.timestamp);
         renderPosts(allPosts);
     });
@@ -256,7 +359,6 @@ function renderPosts(posts) {
     
     container.innerHTML = "";
     posts.forEach((post, index) => {
-        // SỬA: Dùng countTopLevelComments thay vì countAllComments
         const commentCount = countTopLevelComments(post.comments);
         
         const div = document.createElement("div");
@@ -313,14 +415,11 @@ function loadReports() {
 
         for (let postId in data) {
             const reportsOfPost = data[postId];
-
-            // Lấy nội dung bài viết
             const postSnap = await postsRef.child(postId).once("value");
             const postContent = postSnap.val() ? postSnap.val().content : "❌ Bài viết đã bị xóa";
 
             for (let reportId in reportsOfPost) {
                 const report = reportsOfPost[reportId];
-
                 allReports.push({
                     id: reportId,
                     postId: postId,
@@ -369,7 +468,6 @@ function renderReports(reports) {
         container.appendChild(div);
     });
     
-    // Cập nhật số lượng báo cáo chưa xử lý
     document.getElementById("pendingReports").innerText = reports.length;
 }
 
@@ -450,6 +548,8 @@ function deleteAnnouncement(annId) {
 async function loadStats() {
     const postsSnapshot = await postsRef.once("value");
     const posts = postsSnapshot.val() || {};
+    const pendingSnapshot = await pendingPostsRef.once("value");
+    const pendingCount = pendingSnapshot.numChildren() || 0;
     
     let totalPosts = 0;
     let totalComments = 0;
@@ -467,19 +567,15 @@ async function loadStats() {
             todayPosts++;
         }
         
-        // SỬA: Đếm comment cấp 1 (không tính reply)
         if (post.comments) {
-            const commentCount = countTopLevelComments(post.comments);
-            totalComments += commentCount;
+            totalComments += countTopLevelComments(post.comments);
         }
         
-        // Lấy danh sách người dùng từ comment
         if (post.comments) {
             extractUsersFromComments(post.comments, users);
         }
     }
     
-    // Đếm báo cáo
     const reportsSnapshot = await reportsRef.once("value");
     let pendingReports = 0;
     reportsSnapshot.forEach(post => {
@@ -492,6 +588,8 @@ async function loadStats() {
     document.getElementById("pendingReports").innerText = pendingReports;
     document.getElementById("totalUsers").innerText = users.size || 0;
     document.getElementById("todayPosts").innerText = todayPosts;
+    document.getElementById("pendingCount").innerText = pendingCount;
+    document.getElementById("pendingBadge").innerText = pendingCount;
 }
 
 function extractUsersFromComments(commentsObj, usersSet) {
@@ -517,12 +615,23 @@ function logout() {
     location.reload();
 }
 
+// Lắng nghe realtime cập nhật pending badge
+pendingPostsRef.on("value", (snapshot) => {
+    const count = snapshot.numChildren();
+    document.getElementById("pendingBadge").innerText = count;
+    document.getElementById("pendingCount").innerText = count;
+    if (document.getElementById("pendingTab").classList.contains("active")) {
+        loadPendingPosts();
+    }
+});
+
 // Khởi tạo
+loadPendingPosts();
 loadPosts();
 loadReports();
 loadAnnouncements();
 
-console.log("✅ Admin Panel đã sẵn sàng!");
+console.log("✅ Admin Panel đã sẵn sàng! - Duyệt bài ngay lập tức không cần xác nhận");
 </script>
 </body>
 </html>
