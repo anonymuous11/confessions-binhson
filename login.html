@@ -289,7 +289,7 @@ function renderPendingPosts(pending) {
                 👤 Người gửi: ${escapeHtml(post.authorName || "Ẩn danh")}
             </div>
             <div class="pending-actions">
-                <button class="btn btn-success" onclick="approvePost('${post.id}', '${escapeHtml(post.content)}', ${post.timestamp}, '${escapeHtml(post.authorName || "Ẩn danh")}')">✅ Duyệt & Đăng</button>
+                <button class="btn btn-success" onclick="approvePost('${post.id}', \`${post.content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, ${post.timestamp}, '${post.authorName?.replace(/'/g, "\\'") || "Ẩn danh"}')">✅ Duyệt & Đăng</button>
                 <button class="btn btn-danger" onclick="rejectPost('${post.id}')">❌ Từ chối & Xóa</button>
             </div>
         `;
