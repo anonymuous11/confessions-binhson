@@ -60,7 +60,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
 .fake-input { margin-left: 12px; background: #f0f2f5; padding: 10px 16px; border-radius: 40px; flex: 1; color: #65676b; font-size: 15px; }
 
 #realPost { padding: 16px; border-top: 1px solid #e4e6eb; display: none; }
-textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; border: 1px solid #e4e6eb; font-family: inherit; resize: vertical; margin-bottom: 12px; }
+textarea { 
+    width: 100%; 
+    font-size: 15px; 
+    border-radius: 8px; 
+    padding: 12px; 
+    border: 1px solid #e4e6eb; 
+    font-family: inherit; 
+    resize: vertical; 
+    margin-bottom: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
 .btn-post { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
 .btn-post:disabled { background: #9cb8d4; cursor: not-allowed; }
 
@@ -70,7 +82,14 @@ textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; bord
 .post-time { font-size: 13px; color: #65676b; margin-left: 8px; }
 .post-number { font-weight: 600; color: #1877f2; margin-right: 6px; }
 .today-badge { background: #e7f3ff; color: #1877f2; font-size: 12px; padding: 2px 8px; border-radius: 12px; margin-left: 8px; }
-.post-content { padding: 0 16px 12px; font-size: 15px; line-height: 1.5; }
+.post-content { 
+    padding: 0 16px 12px; 
+    font-size: 15px; 
+    line-height: 1.5; 
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 .post-stats { padding: 8px 16px; border-top: 1px solid #e4e6eb; display: flex; justify-content: space-between; font-size: 13px; color: #65676b; }
 .post-actions { display: flex; border-top: 1px solid #e4e6eb; }
 .post-actions button { flex: 1; background: none; border: none; padding: 10px; font-weight: 600; color: #65676b; cursor: pointer; }
@@ -83,7 +102,12 @@ textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; bord
 .comment-main { display: flex; gap: 8px; }
 .comment-bubble { background: #f0f2f5; border-radius: 18px; padding: 8px 12px; flex: 1; }
 .comment-name { font-weight: 600; font-size: 13px; }
-.comment-text { font-size: 14px; margin-top: 2px; }
+.comment-text { 
+    font-size: 14px; 
+    margin-top: 2px; 
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
 .comment-actions { margin-top: 4px; font-size: 12px; color: #65676b; font-weight: 600; }
 .comment-actions span { cursor: pointer; margin-right: 12px; }
 .reply-children { margin-left: 40px; margin-top: 8px; border-left: 2px solid #e4e6eb; padding-left: 10px; }
@@ -151,7 +175,7 @@ textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; bord
             <div class="fake-input">Bạn đang nghĩ gì?</div>
         </div>
         <div id="realPost">
-            <textarea id="content" rows="3" placeholder="Chia sẻ suy nghĩ của bạn..."></textarea>
+            <textarea id="content" rows="4" placeholder="Chia sẻ suy nghĩ của bạn... (Có thể xuống dòng bằng phím Enter)"></textarea>
             <label style="display: flex; align-items: center; font-size: 13px; margin-bottom: 10px;">
                 <input type="checkbox" id="agreeRule" style="margin-right: 8px;"> Tôi đồng ý với nội quy
             </label>
@@ -282,6 +306,7 @@ function getUserName() {
 
 function openPost() { 
     document.getElementById("realPost").style.display = "block"; 
+    document.getElementById("content").focus();
 }
 
 function escapeHtml(text) { 
