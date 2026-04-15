@@ -1,4 +1,3 @@
-<!-- FILE: index.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -63,6 +62,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
 #realPost { padding: 16px; border-top: 1px solid #e4e6eb; display: none; }
 textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; border: 1px solid #e4e6eb; font-family: inherit; resize: vertical; margin-bottom: 12px; }
 .btn-post { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
+.btn-post:disabled { background: #9cb8d4; cursor: not-allowed; }
 
 .card { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .post-header { padding: 12px 16px; }
@@ -174,11 +174,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const postsRef = db.ref("confessions");
-const pendingPostsRef = db.ref("pending_posts"); // Bài viết chờ duyệt
+const pendingPostsRef = db.ref("pending_posts");
 const reportsRef = db.ref("reports");
 const announcementsRef = db.ref("announcements");
 const onlineRef = db.ref(".info/connected");
 const presenceRef = db.ref("presence");
+
+// 🔥 BACKEND AI URL (đã deploy trên Render)
+const AI_API_URL = "https://ai-backend-ufus.onrender.com/moderate";
 
 let currentUserId = null;
 let myPresenceRef = null;
@@ -301,23 +304,81 @@ function isToday(ts) {
     return new Date(ts).toDateString() === new Date().toDateString(); 
 }
 
-// ========== ĐĂNG BÀI MỚI (CHỜ DUYỆT) ==========
-function postData() {
+// ========== ĐĂNG BÀI MỚI (CÓ AI DUYỆT) ==========
+async function postData() {
     const text = document.getElementById("content").value.trim();
     if (!text || !document.getElementById("agreeRule").checked) {
         alert("Vui lòng nhập nội dung và đồng ý nội quy!"); 
         return;
     }
-    // Gửi bài vào pending_posts để admin duyệt
-    pendingPostsRef.push({ 
-        content: text, 
-        timestamp: Date.now(),
-        authorName: getUserName(),
-        status: "pending"
-    });
-    document.getElementById("content").value = "";
-    document.getElementById("realPost").style.display = 'none';
-    alert("✅ Bài viết của bạn đã được gửi đến Ban Quản Trị để duyệt. Vui lòng chờ trong giây lát!");
+    
+    const btn = document.querySelector(".btn-post");
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ AI đang kiểm tra...";
+    btn.disabled = true;
+    
+    try {
+        // Gọi AI kiểm tra nội dung
+        const response = await fetch(AI_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ content: text })
+        });
+        
+        const data = await response.json();
+        console.log("AI Result:", data);
+        
+        // Xử lý theo kết quả từ AI
+        if (data.result === "UNSAFE") {
+            alert("❌ Nội dung vi phạm quy định (chứa từ ngữ thô tục, 18+, hoặc spam). Vui lòng viết lại!");
+            btn.innerText = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
+        if (data.result === "REVIEW") {
+            // Nội dung nhạy cảm -> gửi admin duyệt
+            await pendingPostsRef.push({ 
+                content: text, 
+                timestamp: Date.now(),
+                authorName: getUserName(),
+                status: "pending",
+                ai_review: "REVIEW"
+            });
+            alert("⚠️ Bài viết của bạn đang được kiểm duyệt thủ công (nội dung nhạy cảm). Cảm ơn bạn!");
+        } else if (data.result === "SAFE") {
+            // Nội dung an toàn -> đăng luôn
+            await postsRef.push({ 
+                content: text, 
+                timestamp: Date.now(),
+                likes: 0,
+                likedBy: {}
+            });
+            alert("Bài viết đã được đăng lên diễn đàn!");
+        }
+        
+        // Xóa form sau khi đăng
+        document.getElementById("content").value = "";
+        document.getElementById("realPost").style.display = 'none';
+        document.getElementById("agreeRule").checked = false;
+        
+    } catch (error) {
+        console.error("Lỗi gọi AI:", error);
+        // Fallback: nếu AI lỗi thì gửi admin duyệt
+        await pendingPostsRef.push({ 
+            content: text, 
+            timestamp: Date.now(),
+            authorName: getUserName(),
+            status: "pending",
+            ai_error: true
+        });
+        alert("Hệ thống đang bận, bài viết đã được gửi đến admin để duyệt!");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 }
 
 // ========== LIKE ==========
@@ -559,7 +620,7 @@ function loadApprovedPosts() {
     });
 }
 
-// Lắng nghe bài viết mới được duyệt (thêm vào confessions)
+// Lắng nghe bài viết mới được duyệt
 postsRef.on("child_added", (snapshot) => {
     if (!document.querySelector(`.card[data-id="${snapshot.key}"]`)) {
         renderPost(snapshot.key, snapshot.val());
@@ -590,7 +651,8 @@ postsRef.on("child_removed", (snapshot) => {
 loadApprovedPosts();
 initPresence();
 
-console.log("✅ Diễn đàn đã sẵn sàng! - Bài viết cần được admin duyệt trước khi hiển thị");
+console.log("✅ Diễn đàn đã sẵn sàng! - AI đã được tích hợp để duyệt bài tự động");
+console.log("🤖 AI API:", AI_API_URL);
 </script>
 </body>
 </html>
