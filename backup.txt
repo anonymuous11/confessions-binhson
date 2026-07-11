@@ -305,12 +305,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const postsRef = db.ref("confessions");
+const pendingPostsRef = db.ref("pending_posts");
 const reportsRef = db.ref("reports");
 const announcementsRef = db.ref("announcements");
 const onlineRef = db.ref(".info/connected");
 const presenceRef = db.ref("presence");
 const chatMessagesRef = db.ref("community_chat");
 
+const AI_API_URL = "https://ai-backend-ufus.onrender.com/moderate";
 
 let currentUserId = null;
 let myPresenceRef = null;
@@ -426,22 +428,57 @@ function openPost() {
 async function postData() {
     const text = document.getElementById("content").value.trim();
     if (!text || !document.getElementById("agreeRule").checked) {
-        alert("Vui lòng nhập nội dung và đồng ý nội quy!");
+        alert("Vui lòng nhập nội dung và đồng ý nội quy!"); 
         return;
     }
-    const btn=document.querySelector(".btn-post");
-    btn.disabled=true;
-    try{
-        await postsRef.push({content:text,timestamp:Date.now(),likes:0,likedBy:{}});
-        alert("✅ Đăng bài thành công!");
-        document.getElementById("content").value="";
-        document.getElementById("agreeRule").checked=false;
-        document.getElementById("realPost").style.display="none";
-    }catch(e){
-        console.error(e);
-        alert("Có lỗi khi đăng bài.");
+    
+    const btn = document.querySelector(".btn-post");
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ AI đang kiểm tra...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(AI_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: text })
+        });
+        const data = await response.json();
+        
+        if (data.result === "UNSAFE") {
+            alert("❌ Nội dung vi phạm quy định!");
+            btn.innerText = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
+        if (data.result === "REVIEW") {
+            await pendingPostsRef.push({ 
+                content: text, timestamp: Date.now(), authorName: getUserName(),
+                status: "pending", ai_review: "REVIEW"
+            });
+            alert("⚠️ Bài viết đang được kiểm duyệt.");
+        } else if (data.result === "SAFE") {
+            await postsRef.push({ 
+                content: text, timestamp: Date.now(), likes: 0, likedBy: {}
+            });
+            alert("✅ Bài viết đã được đăng!");
+        }
+        
+        document.getElementById("content").value = "";
+        document.getElementById("realPost").style.display = 'none';
+        document.getElementById("agreeRule").checked = false;
+    } catch (error) {
+        console.error("Lỗi:", error);
+        await pendingPostsRef.push({ 
+            content: text, timestamp: Date.now(), authorName: getUserName(),
+            status: "pending", ai_error: true
+        });
+        alert("Hệ thống bận, bài viết đã gửi admin duyệt!");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
-    btn.disabled=false;
 }
 
 function likePost(postId) {
