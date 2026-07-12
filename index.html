@@ -1,758 +1,1646 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>Diễn đàn trò chuyện ẩn danh + Chat chung</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6d5dfc">
+  <meta name="description" content="Diễn đàn và phòng chat cộng đồng ẩn danh thời gian thực.">
+  <title>Ẩn Danh — Diễn đàn cộng đồng</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-    background: #f0f2f5; 
-    line-height: 1.34; 
-    color: #1c1e21; 
-    padding-bottom: 80px;
-}
-.container { max-width: 680px; margin: 0 auto; padding: 16px; }
-
-.rules-box-fixed { 
-    position: fixed; top: 20px; left: 20px; width: 280px; background: white; border-radius: 12px; 
-    padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); font-size: 13px; z-index: 1000; 
-    border: 1px solid #e4e6eb; 
-}
-.rules-box-fixed h3 { font-size: 15px; margin-bottom: 12px; }
-.rules-box-fixed ul { padding-left: 20px; }
-.rules-box-fixed li { margin: 8px 0; color: #65676b; }
-
-.header { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
-.logo-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
-.online-badge { 
-    position: absolute; top: 16px; right: 16px; background: #e7f3ff; padding: 6px 12px; border-radius: 20px; 
-    font-size: 13px; font-weight: 600; color: #1877f2; display: flex; align-items: center; gap: 6px;
-}
-.online-dot { width: 10px; height: 10px; background: #31a24c; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
-
-.announcement-box {
-    background: linear-gradient(135deg, #fff3e0 0%, #ffe8cc 100%);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    border-left: 5px solid #ff9800;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    display: none;
-    position: relative;
-}
-.announcement-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.announcement-header h3 { font-size: 16px; color: #e65100; }
-.announcement-content { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 12px; }
-.announcement-time { font-size: 11px; color: #999; display: flex; justify-content: space-between; align-items: center; }
-.close-announcement { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 0 8px; }
-
-.post-box { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); overflow: hidden; }
-.post-top { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.2s; }
-.post-top:hover { background: #f5f5f5; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; background: #e4e6eb; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-.fake-input { margin-left: 12px; background: #f0f2f5; padding: 10px 16px; border-radius: 40px; flex: 1; color: #65676b; font-size: 15px; }
-#realPost { padding: 16px; border-top: 1px solid #e4e6eb; display: none; }
-textarea { width: 100%; font-size: 15px; border-radius: 8px; padding: 12px; border: 1px solid #e4e6eb; font-family: inherit; resize: vertical; margin-bottom: 12px; }
-.btn-post { background: #1877f2; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
-.btn-post:disabled { background: #9cb8d4; cursor: not-allowed; }
-
-.card { background: white; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-.post-header { padding: 12px 16px; }
-.post-author { font-weight: 600; font-size: 15px; }
-.post-time { font-size: 13px; color: #65676b; margin-left: 8px; }
-.post-number { font-weight: 600; color: #1877f2; margin-right: 6px; }
-.today-badge { background: #e7f3ff; color: #1877f2; font-size: 12px; padding: 2px 8px; border-radius: 12px; margin-left: 8px; }
-.post-content { padding: 0 16px 12px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
-.post-stats { padding: 8px 16px; border-top: 1px solid #e4e6eb; display: flex; justify-content: space-between; font-size: 13px; color: #65676b; }
-.post-actions { display: flex; border-top: 1px solid #e4e6eb; }
-.post-actions button { flex: 1; background: none; border: none; padding: 10px; font-weight: 600; color: #65676b; cursor: pointer; }
-.post-actions button:hover { background: #f0f2f5; }
-
-.comment-section { padding: 12px 16px; border-top: 1px solid #e4e6eb; background: #fff; display: none; }
-.comment-input-wrapper { display: flex; gap: 8px; margin-bottom: 12px; }
-.comment-input-wrapper input { flex: 1; border: none; background: #f0f2f5; padding: 8px 16px; border-radius: 20px; font-size: 14px; }
-.comment-node { margin-bottom: 12px; }
-.comment-main { display: flex; gap: 8px; }
-.comment-bubble { background: #f0f2f5; border-radius: 18px; padding: 8px 12px; flex: 1; }
-.comment-name { font-weight: 600; font-size: 13px; }
-.comment-text { font-size: 14px; margin-top: 2px; white-space: pre-wrap; word-wrap: break-word; }
-.comment-actions { margin-top: 4px; font-size: 12px; color: #65676b; font-weight: 600; }
-.comment-actions span { cursor: pointer; margin-right: 12px; }
-.reply-children { margin-left: 40px; margin-top: 8px; border-left: 2px solid #e4e6eb; padding-left: 10px; }
-.reply-input-box { margin-left: 40px; margin-top: 8px; display: none; }
-.reply-input-box input { width: 100%; background: #f0f2f5; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
-
-/* Chat FAB */
-.chat-fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 28px;
-    background: #1877f2;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    cursor: pointer;
-    z-index: 1100;
-    transition: transform 0.2s ease;
-    border: none;
-    font-size: 28px;
-}
-.chat-fab:hover { transform: scale(1.05); background: #0e5fd9; }
-
-.chat-modal {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 360px;
-    max-width: calc(100vw - 40px);
-    height: 480px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.3);
-    display: none;
-    flex-direction: column;
-    z-index: 1150;
-    overflow: hidden;
-    border: 1px solid #e4e6eb;
-}
-.chat-modal.show { display: flex; }
-.chat-header {
-    background: #1877f2;
-    color: white;
-    padding: 14px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 16px;
-}
-.chat-header button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 22px;
-    cursor: pointer;
-    padding: 0 8px;
-}
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: #f8f9fa;
-}
-.chat-bubble {
-    max-width: 85%;
-    padding: 8px 12px;
-    border-radius: 18px;
-    font-size: 14px;
-    line-height: 1.4;
-    word-wrap: break-word;
-}
-.chat-bubble.own {
-    align-self: flex-end;
-    background: #1877f2;
-    color: white;
-    border-bottom-right-radius: 4px;
-}
-.chat-bubble.other {
-    align-self: flex-start;
-    background: white;
-    border: 1px solid #e4e6eb;
-    border-bottom-left-radius: 4px;
-    color: #1c1e21;
-}
-.chat-name {
-    font-weight: 600;
-    font-size: 12px;
-    margin-bottom: 3px;
-    opacity: 0.8;
-}
-.chat-time {
-    font-size: 10px;
-    text-align: right;
-    margin-top: 3px;
-    opacity: 0.6;
-}
-.chat-input-area {
-    display: flex;
-    padding: 12px;
-    background: white;
-    border-top: 1px solid #e4e6eb;
-    gap: 8px;
-}
-.chat-input-area input {
-    flex: 1;
-    border: none;
-    background: #f0f2f5;
-    padding: 10px 14px;
-    border-radius: 24px;
-    font-size: 14px;
-    outline: none;
-}
-.chat-input-area button {
-    background: #1877f2;
-    border: none;
-    color: white;
-    border-radius: 24px;
-    padding: 0 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-@media (max-width: 560px) {
-    .chat-modal {
-        bottom: 80px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-        max-width: none;
-        height: 60vh;
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6fb;
+      --surface: rgba(255, 255, 255, .88);
+      --surface-solid: #ffffff;
+      --surface-2: #f0f2f8;
+      --surface-3: #e8ebf4;
+      --text: #171824;
+      --muted: #696c7e;
+      --subtle: #9598a9;
+      --line: rgba(20, 21, 35, .09);
+      --primary: #6d5dfc;
+      --primary-strong: #5848e8;
+      --primary-soft: #efedff;
+      --cyan: #18b6c9;
+      --success: #20a56b;
+      --success-soft: #e8f8f1;
+      --warning: #e78a22;
+      --warning-soft: #fff5e8;
+      --danger: #e05269;
+      --danger-soft: #fff0f3;
+      --shadow-sm: 0 8px 24px rgba(31, 35, 58, .06);
+      --shadow-md: 0 18px 55px rgba(31, 35, 58, .11);
+      --shadow-lg: 0 28px 90px rgba(31, 35, 58, .18);
+      --radius-sm: 12px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --header-h: 72px;
     }
-    .rules-box-fixed { display: none; }
-    .header { padding-top: 60px; }
-    .online-badge { top: 12px; right: 12px; font-size: 11px; padding: 4px 10px; }
-}
-</style>
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0e0f16;
+      --surface: rgba(25, 27, 39, .86);
+      --surface-solid: #191b27;
+      --surface-2: #222534;
+      --surface-3: #2b2e40;
+      --text: #f5f6fb;
+      --muted: #aaaec1;
+      --subtle: #777b90;
+      --line: rgba(255, 255, 255, .09);
+      --primary: #8b7cff;
+      --primary-strong: #a095ff;
+      --primary-soft: rgba(139, 124, 255, .15);
+      --cyan: #35c7d7;
+      --success: #47c990;
+      --success-soft: rgba(71, 201, 144, .12);
+      --warning: #ffad4c;
+      --warning-soft: rgba(255, 173, 76, .12);
+      --danger: #ff7188;
+      --danger-soft: rgba(255, 113, 136, .13);
+      --shadow-sm: 0 8px 24px rgba(0, 0, 0, .16);
+      --shadow-md: 0 18px 55px rgba(0, 0, 0, .28);
+      --shadow-lg: 0 28px 90px rgba(0, 0, 0, .42);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% -10%, rgba(109, 93, 252, .17), transparent 32rem),
+        radial-gradient(circle at 90% 20%, rgba(24, 182, 201, .11), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    body.no-scroll { overflow: hidden; }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+    button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    svg { display: block; }
+    ::selection { background: rgba(109, 93, 252, .24); }
+    :focus-visible { outline: 3px solid rgba(109, 93, 252, .34); outline-offset: 2px; }
+
+    .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-sm { width: 17px; height: 17px; }
+    .icon-lg { width: 24px; height: 24px; }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-h);
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-solid) 76%, transparent);
+      backdrop-filter: blur(20px) saturate(160%);
+    }
+    .header-inner {
+      max-width: 1240px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      letter-spacing: -.06em;
+      background: linear-gradient(145deg, #8c7dff, #5a49ee 58%, #2fc4d4);
+      box-shadow: 0 10px 25px rgba(91, 73, 238, .28);
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      top: -9px;
+      right: -6px;
+    }
+    .brand-copy { min-width: 0; }
+    .brand-title { font-size: 17px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap; }
+    .brand-subtitle { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .header-actions { display: flex; align-items: center; gap: 9px; }
+    .identity-pill {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      max-width: 250px;
+      padding: 7px 11px 7px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .identity-avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: white; font-size: 12px; font-weight: 800; }
+    .identity-text { min-width: 0; }
+    .identity-label { display: block; color: var(--subtle); font-size: 10px; line-height: 1.15; text-transform: uppercase; letter-spacing: .08em; }
+    .identity-name { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .icon-btn:hover { transform: translateY(-1px); background: var(--surface-solid); border-color: rgba(109,93,252,.25); }
+
+    .page-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 26px 22px 52px;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 650px) 270px;
+      gap: 22px;
+      align-items: start;
+    }
+    .sidebar { position: sticky; top: calc(var(--header-h) + 22px); display: grid; gap: 16px; }
+    .panel, .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(16px);
+    }
+    .panel { padding: 17px; }
+    .panel-title { margin: 0 0 13px; font-size: 13px; font-weight: 800; letter-spacing: .015em; display: flex; align-items: center; gap: 8px; }
+    .rule-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 11px; }
+    .rule-list li { display: grid; grid-template-columns: 23px 1fr; gap: 9px; align-items: start; color: var(--muted); font-size: 12px; }
+    .rule-index { width: 23px; height: 23px; border-radius: 8px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font-weight: 800; font-size: 10px; }
+    .community-stat { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .community-stat:last-child { border-bottom: 0; padding-bottom: 0; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 5px var(--success-soft); animation: breathe 1.8s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scale(.76); opacity: .6; } }
+
+    .main-column { min-width: 0; display: grid; gap: 16px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 178px;
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-lg);
+      color: white;
+      background:
+        radial-gradient(circle at 80% 10%, rgba(255,255,255,.22), transparent 12rem),
+        linear-gradient(125deg, #5848e8 0%, #755fff 54%, #25b8ca 125%);
+      box-shadow: 0 22px 60px rgba(88,72,232,.23);
+    }
+    .hero::before, .hero::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }
+    .hero::before { width: 220px; height: 220px; right: -65px; top: -95px; }
+    .hero::after { width: 130px; height: 130px; right: 48px; bottom: -90px; }
+    .hero-content { position: relative; z-index: 1; max-width: 480px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.13); font-size: 11px; font-weight: 750; backdrop-filter: blur(8px); }
+    .hero h1 { margin: 13px 0 8px; font-size: clamp(25px, 4vw, 35px); line-height: 1.08; letter-spacing: -.045em; }
+    .hero p { margin: 0; max-width: 470px; color: rgba(255,255,255,.78); font-size: 13px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 19px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.9); }
+    .hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+    .announcement {
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px 16px;
+      border: 1px solid color-mix(in srgb, var(--warning) 25%, var(--line));
+      border-radius: var(--radius-md);
+      background: var(--warning-soft);
+      box-shadow: var(--shadow-sm);
+    }
+    .announcement.show { display: flex; }
+    .announcement-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; color: var(--warning); background: color-mix(in srgb, var(--warning) 12%, transparent); flex: 0 0 auto; }
+    .announcement-body { min-width: 0; flex: 1; }
+    .announcement-title { font-size: 12px; font-weight: 850; color: var(--warning); }
+    .announcement-message { margin-top: 3px; color: var(--text); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .announcement-time { margin-top: 5px; color: var(--subtle); font-size: 10px; }
+    .announcement-close { width: 30px; height: 30px; border: 0; border-radius: 10px; display: grid; place-items: center; background: transparent; color: var(--muted); cursor: pointer; }
+    .announcement-close:hover { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+
+    .composer { overflow: hidden; }
+    .composer-closed { padding: 14px; display: flex; align-items: center; gap: 11px; cursor: text; }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      font-size: 12px;
+      font-weight: 850;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    }
+    .composer-placeholder { min-width: 0; flex: 1; padding: 11px 15px; border-radius: 14px; color: var(--muted); background: var(--surface-2); font-size: 13px; }
+    .composer-trigger { width: 38px; height: 38px; border: 0; border-radius: 12px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); cursor: pointer; }
+    .composer-form { display: none; padding: 0 14px 14px; }
+    .composer.open .composer-form { display: block; animation: reveal .2s ease; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } }
+    .composer-divider { height: 1px; margin: 0 0 13px; background: var(--line); }
+    .composer textarea {
+      width: 100%; min-height: 128px; max-height: 330px; resize: vertical;
+      border: 1px solid var(--line); border-radius: 15px; padding: 13px 14px;
+      background: var(--surface-2); color: var(--text); outline: none; font-size: 14px; line-height: 1.55;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .composer textarea:focus { border-color: rgba(109,93,252,.5); box-shadow: 0 0 0 4px rgba(109,93,252,.1); }
+    .composer-footer { margin-top: 11px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .composer-meta { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+    .check-row { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; cursor: pointer; }
+    .check-row input { accent-color: var(--primary); }
+    .char-count { color: var(--subtle); font-size: 10px; }
+    .primary-btn, .secondary-btn {
+      min-height: 40px; border-radius: 13px; padding: 0 16px; border: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .18s ease, opacity .18s ease, background .18s ease;
+    }
+    .primary-btn { color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); box-shadow: 0 10px 24px rgba(109,93,252,.22); }
+    .primary-btn:hover { transform: translateY(-1px); }
+    .primary-btn:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+    .secondary-btn { color: var(--text); background: var(--surface-2); border: 1px solid var(--line); }
+
+    .feed-toolbar { display: flex; align-items: center; gap: 10px; }
+    .search-wrap { position: relative; flex: 1; }
+    .search-wrap .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--subtle); }
+    .search-input {
+      width: 100%; height: 43px; border: 1px solid var(--line); border-radius: 14px; padding: 0 14px 0 40px; background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); outline: none;
+    }
+    .search-input:focus { border-color: rgba(109,93,252,.45); box-shadow: 0 0 0 4px rgba(109,93,252,.09); }
+    .sort-tabs { display: flex; padding: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-sm); }
+    .sort-tab { height: 34px; border: 0; border-radius: 10px; padding: 0 12px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; }
+    .sort-tab.active { color: var(--primary); background: var(--primary-soft); }
+
+    .feed { display: grid; gap: 14px; }
+    .post-card { overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .post-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .post-head { padding: 15px 16px 10px; display: flex; align-items: flex-start; gap: 11px; }
+    .post-identity { min-width: 0; flex: 1; }
+    .post-author-line { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+    .post-author { font-size: 13px; font-weight: 850; }
+    .post-number { padding: 3px 7px; border-radius: 8px; color: var(--primary); background: var(--primary-soft); font-size: 9px; font-weight: 900; letter-spacing: .04em; }
+    .today-badge { padding: 3px 7px; border-radius: 8px; color: var(--success); background: var(--success-soft); font-size: 9px; font-weight: 850; }
+    .post-time { margin-top: 2px; color: var(--subtle); font-size: 10px; }
+    .more-btn { width: 34px; height: 34px; border: 0; border-radius: 11px; display: grid; place-items: center; color: var(--muted); background: transparent; cursor: pointer; }
+    .more-btn:hover { background: var(--surface-2); }
+    .post-content { padding: 3px 16px 16px; color: var(--text); font-size: 14px; line-height: 1.62; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .post-stats { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .post-stats span { display: inline-flex; align-items: center; gap: 5px; }
+    .post-actions { padding: 7px 9px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; border-top: 1px solid var(--line); }
+    .action-btn { min-height: 38px; border: 0; border-radius: 11px; display: flex; align-items: center; justify-content: center; gap: 7px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; }
+    .action-btn:hover { color: var(--text); background: var(--surface-2); }
+    .action-btn.liked { color: var(--primary); background: var(--primary-soft); }
+    .action-btn.report:hover { color: var(--danger); background: var(--danger-soft); }
+
+    .comments { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-2) 56%, transparent); }
+    .comments.open { display: block; animation: reveal .2s ease; }
+    .comment-composer { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .comment-composer input, .reply-form input {
+      flex: 1; min-width: 0; height: 39px; border: 1px solid var(--line); border-radius: 13px; padding: 0 12px; background: var(--surface-solid); color: var(--text); outline: none; font-size: 12px;
+    }
+    .comment-composer input:focus, .reply-form input:focus { border-color: rgba(109,93,252,.45); box-shadow: 0 0 0 3px rgba(109,93,252,.08); }
+    .send-mini { width: 39px; height: 39px; border: 0; border-radius: 12px; display: grid; place-items: center; color: white; background: var(--primary); cursor: pointer; }
+    .comment-list { display: grid; gap: 12px; }
+    .comment-node { min-width: 0; }
+    .comment-row { display: flex; align-items: flex-start; gap: 9px; }
+    .comment-avatar { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: white; font-size: 9px; font-weight: 850; flex: 0 0 auto; }
+    .comment-main { min-width: 0; flex: 1; }
+    .comment-bubble { display: inline-block; max-width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px 14px 14px 14px; background: var(--surface-solid); }
+    .comment-name { color: var(--text); font-size: 10px; font-weight: 850; }
+    .comment-text { margin-top: 2px; color: var(--text); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .comment-meta { margin-top: 4px; display: flex; align-items: center; gap: 10px; color: var(--subtle); font-size: 9px; }
+    .reply-link { border: 0; padding: 0; color: var(--primary); background: transparent; font-weight: 800; cursor: pointer; }
+    .reply-form { display: none; margin: 7px 0 0 39px; gap: 7px; }
+    .reply-form.open { display: flex; }
+    .reply-children { margin: 10px 0 0 38px; padding-left: 11px; border-left: 1px solid var(--line); display: grid; gap: 11px; }
+    .empty-comments { padding: 8px 0 2px; text-align: center; color: var(--subtle); font-size: 11px; }
+
+    .empty-state, .loading-state { padding: 36px 20px; text-align: center; }
+    .empty-icon { width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 17px; display: grid; place-items: center; color: var(--primary); background: var(--primary-soft); }
+    .empty-title { font-size: 14px; font-weight: 850; }
+    .empty-text { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .skeleton { height: 190px; border-radius: var(--radius-md); background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 38%, var(--surface) 55%); background-size: 400% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { to { background-position: -100% 0; } }
+
+    .topic-list { display: grid; gap: 8px; }
+    .topic-item { padding: 10px 11px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+    .topic-name { font-size: 11px; font-weight: 800; }
+    .topic-desc { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .privacy-note { color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .privacy-note strong { color: var(--text); }
+    .open-chat-card {
+      width: 100%; border: 0; border-radius: 16px; padding: 14px; text-align: left; color: white; cursor: pointer;
+      background: linear-gradient(135deg, #6d5dfc, #4c99e9 70%, #20bacb);
+      box-shadow: 0 14px 30px rgba(84,84,224,.2);
+    }
+    .open-chat-card-head { display: flex; align-items: center; justify-content: space-between; }
+    .open-chat-card-title { font-size: 13px; font-weight: 850; }
+    .open-chat-card p { margin: 7px 0 0; color: rgba(255,255,255,.74); font-size: 10px; }
+
+    .chat-fab {
+      position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 150;
+      width: 58px; height: 58px; border: 0; border-radius: 19px; display: grid; place-items: center;
+      color: white; background: linear-gradient(135deg, var(--primary), #397fdf 74%, var(--cyan));
+      box-shadow: 0 17px 38px rgba(70,72,205,.32); cursor: pointer; transition: transform .2s ease;
+    }
+    .chat-fab:hover { transform: translateY(-2px) scale(1.02); }
+    .unread-badge { display: none; position: absolute; top: -5px; right: -5px; min-width: 21px; height: 21px; padding: 0 5px; border: 3px solid var(--bg); border-radius: 999px; place-items: center; color: white; background: var(--danger); font-size: 9px; font-weight: 900; }
+    .unread-badge.show { display: grid; }
+
+    .chat-drawer-backdrop { position: fixed; inset: 0; z-index: 199; display: none; background: rgba(8,9,15,.4); backdrop-filter: blur(3px); }
+    .chat-drawer-backdrop.show { display: block; }
+    .chat-drawer {
+      position: fixed; z-index: 200; top: 12px; right: 12px; bottom: 12px; width: min(410px, calc(100vw - 24px));
+      display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 25px;
+      background: var(--surface-solid); box-shadow: var(--shadow-lg); transform: translateX(calc(100% + 30px)); transition: transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    .chat-drawer.show { transform: translateX(0); }
+    .chat-head { padding: 16px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, var(--primary-soft), transparent); }
+    .chat-head-icon { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; color: white; background: linear-gradient(135deg, var(--primary), var(--cyan)); }
+    .chat-head-copy { min-width: 0; flex: 1; }
+    .chat-title { font-size: 13px; font-weight: 850; }
+    .chat-status { color: var(--muted); font-size: 10px; display: flex; align-items: center; gap: 6px; }
+    .chat-close { width: 38px; height: 38px; border: 0; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); cursor: pointer; }
+    .chat-messages { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(180deg, var(--surface-2), var(--surface-solid) 20%); }
+    .chat-day { align-self: center; padding: 5px 9px; border-radius: 999px; color: var(--subtle); background: var(--surface-2); font-size: 9px; font-weight: 750; }
+    .chat-message { max-width: 82%; }
+    .chat-message.own { align-self: flex-end; }
+    .chat-message.other { align-self: flex-start; }
+    .chat-name { margin: 0 0 3px 5px; color: var(--subtle); font-size: 9px; font-weight: 800; }
+    .chat-bubble { padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px 15px 15px 15px; background: var(--surface-2); font-size: 12px; line-height: 1.48; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .chat-message.own .chat-bubble { border-color: transparent; border-radius: 15px 5px 15px 15px; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); }
+    .chat-time { margin-top: 3px; color: var(--subtle); font-size: 8px; text-align: right; }
+    .chat-input-area { padding: 12px; display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid var(--line); background: var(--surface-solid); }
+    .chat-input-area textarea { flex: 1; min-height: 42px; max-height: 110px; resize: none; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--surface-2); color: var(--text); outline: none; font-size: 12px; line-height: 1.45; }
+    .chat-input-area textarea:focus { border-color: rgba(109,93,252,.45); }
+    .chat-send { width: 42px; height: 42px; border: 0; border-radius: 13px; display: grid; place-items: center; color: white; background: var(--primary); cursor: pointer; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 300; display: none; place-items: center; padding: 18px; background: rgba(8,9,15,.48); backdrop-filter: blur(5px); }
+    .modal-backdrop.show { display: grid; }
+    .modal { width: min(460px, 100%); border: 1px solid var(--line); border-radius: 22px; background: var(--surface-solid); box-shadow: var(--shadow-lg); overflow: hidden; animation: modalIn .2s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+    .modal-head { padding: 17px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .modal-title { font-size: 14px; font-weight: 850; }
+    .modal-close { width: 34px; height: 34px; border: 0; border-radius: 11px; display: grid; place-items: center; background: var(--surface-2); cursor: pointer; }
+    .modal-body { padding: 18px; }
+    .modal-body label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 750; }
+    .modal-body textarea { width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--line); border-radius: 14px; padding: 11px 12px; background: var(--surface-2); color: var(--text); outline: none; font-size: 12px; }
+    .modal-actions { padding: 0 18px 18px; display: flex; justify-content: flex-end; gap: 9px; }
+
+    .toast-stack { position: fixed; z-index: 500; top: calc(var(--header-h) + 12px); right: 18px; width: min(360px, calc(100vw - 36px)); display: grid; gap: 9px; pointer-events: none; }
+    .toast { padding: 12px 13px; border: 1px solid var(--line); border-radius: 14px; display: flex; align-items: flex-start; gap: 9px; background: var(--surface-solid); box-shadow: var(--shadow-md); pointer-events: auto; animation: toastIn .25s ease; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(15px); } }
+    .toast-icon { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; flex: 0 0 auto; }
+    .toast.success .toast-icon { color: var(--success); background: var(--success-soft); }
+    .toast.error .toast-icon { color: var(--danger); background: var(--danger-soft); }
+    .toast.info .toast-icon { color: var(--primary); background: var(--primary-soft); }
+    .toast-message { padding-top: 4px; color: var(--text); font-size: 11px; line-height: 1.45; }
+
+    @media (max-width: 1080px) {
+      .page-shell { grid-template-columns: 220px minmax(0, 1fr); }
+      .right-sidebar { display: none; }
+    }
+    @media (max-width: 800px) {
+      :root { --header-h: 64px; }
+      .header-inner { padding: 0 14px; }
+      .brand-subtitle, .identity-label { display: none; }
+      .identity-pill { max-width: 170px; }
+      .page-shell { padding: 16px 12px 90px; grid-template-columns: 1fr; gap: 14px; }
+      .left-sidebar { display: none; }
+      .hero { min-height: 160px; padding: 21px; }
+      .feed-toolbar { align-items: stretch; flex-direction: column; }
+      .sort-tabs { align-self: flex-start; }
+      .chat-fab { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); }
+    }
+    @media (max-width: 520px) {
+      .brand-title { font-size: 15px; }
+      .identity-pill { padding-right: 8px; }
+      .identity-name { max-width: 88px; }
+      .hero h1 { font-size: 27px; }
+      .hero-meta { gap: 11px; }
+      .composer-footer { align-items: stretch; flex-direction: column; }
+      .primary-btn { width: 100%; }
+      .post-actions { padding: 6px; }
+      .action-btn { font-size: 10px; gap: 5px; }
+      .action-btn .icon { width: 17px; height: 17px; }
+      .reply-children { margin-left: 20px; }
+      .reply-form { margin-left: 20px; }
+      .chat-drawer { inset: 0; width: 100%; border-radius: 0; border: 0; }
+      .chat-drawer-backdrop { display: none !important; }
+      .toast-stack { top: 74px; right: 12px; width: calc(100vw - 24px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V4"/><path d="M5 4h11l-1 4 1 4H5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3-1.5 4.5L6 9l4.5 1.5L12 15l1.5-4.5L18 9l-4.5-1.5Z"/><path d="m5 16-.7 2.3L2 19l2.3.7L5 22l.7-2.3L8 19l-2.3-.7Z"/><path d="m19 14-.7 2.3-2.3.7 2.3.7L19 20l.7-2.3L22 17l-2.3-.7Z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  </svg>
 
-<div class="rules-box-fixed">
-    <h3>📜 Nội quy diễn đàn</h3>
-    <ul>
-        <li>Chat vui vẻ, tôn trọng</li>
-        <li>Không từ ngữ thô tục</li>
-        <li>Phục vụ học tập</li>
-        <li>Mọi bài viết ẩn danh</li>
-    </ul>
-</div>
-
-<div class="container">
-    <div class="header">
-        <img src="pic/logooo.jpg" alt="logo" class="logo-img" onerror="this.src='https://via.placeholder.com/50'">
-        <h2>Diễn Đàn Ẩn Danh</h2>
-        <div class="online-badge" id="onlineBadge">
-            <span class="online-dot"></span>
-            <span id="onlineCount">0</span> người đang online
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div class="brand-copy">
+          <div class="brand-title">Ẩn Danh</div>
+          <div class="brand-subtitle">Không phán xét · Chỉ lắng nghe</div>
         </div>
-    </div>
+      </div>
 
-    <div id="announcementBox" class="announcement-box">
-        <div class="announcement-header">
-            <span>📢</span>
-            <h3>Thông báo từ Ban Quản Trị</h3>
+      <div class="header-actions">
+        <div class="identity-pill" title="Danh tính ẩn danh được lưu trên thiết bị này">
+          <div class="identity-avatar" id="headerAvatar">AD</div>
+          <div class="identity-text">
+            <span class="identity-label">Bạn đang là</span>
+            <span class="identity-name" id="identityName">Đang tạo danh tính…</span>
+          </div>
         </div>
-        <div class="announcement-content" id="announcementContent"></div>
-        <div class="announcement-time">
-            <span id="announcementTime"></span>
-            <button class="close-announcement" onclick="closeAnnouncement()">✕</button>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi giao diện sáng tối">
+          <svg class="icon" id="themeIcon"><use href="#i-moon"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <aside class="sidebar left-sidebar" aria-label="Thông tin cộng đồng">
+      <section class="panel">
+        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-shield"></use></svg>Nội quy cộng đồng</h2>
+        <ol class="rule-list">
+          <li><span class="rule-index">01</span><span>Tôn trọng mọi người, không công kích hoặc bắt nạt.</span></li>
+          <li><span class="rule-index">02</span><span>Không đăng thông tin cá nhân, nội dung nhạy cảm hoặc trái pháp luật.</span></li>
+          <li><span class="rule-index">03</span><span>Không spam, quảng cáo hoặc cố tình phá hoại cuộc trò chuyện.</span></li>
+          <li><span class="rule-index">04</span><span>Mọi bài viết hiển thị bằng danh tính ẩn danh.</span></li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-users"></use></svg>Cộng đồng lúc này</h2>
+        <div class="community-stat"><span class="stat-label">Đang trực tuyến</span><span class="stat-value"><i class="live-dot"></i><b id="onlineCountSide">0</b></span></div>
+        <div class="community-stat"><span class="stat-label">Bài đang hiển thị</span><span class="stat-value" id="postCountSide">0</span></div>
+        <div class="community-stat"><span class="stat-label">Chế độ</span><span class="stat-value">Thời gian thực</span></div>
+      </section>
+    </aside>
+
+    <section class="main-column">
+      <section class="hero" aria-labelledby="heroTitle">
+        <div class="hero-content">
+          <span class="hero-badge"><i class="live-dot"></i><span id="onlineCountHero">0</span> người đang online</span>
+          <h1 id="heroTitle">Một góc nhỏ để bạn nói điều thật lòng.</h1>
+          <p>Đăng tâm sự, hỏi ý kiến hoặc trò chuyện cùng cộng đồng bằng một danh tính ẩn danh riêng trên thiết bị của bạn.</p>
+          <div class="hero-meta">
+            <span><svg class="icon icon-sm"><use href="#i-shield"></use></svg>Không hiện tên thật</span>
+            <span><svg class="icon icon-sm"><use href="#i-message"></use></svg>Chat thời gian thực</span>
+            <span><svg class="icon icon-sm"><use href="#i-spark"></use></svg>Giao diện mới</span>
+          </div>
         </div>
-    </div>
+      </section>
 
-    <div class="post-box">
-        <div class="post-top" onclick="openPost()">
-            <div class="avatar">🙂</div>
-            <div class="fake-input">Bạn đang nghĩ gì?</div>
+      <section class="announcement" id="announcementBox" aria-live="polite">
+        <div class="announcement-icon"><svg class="icon"><use href="#i-bell"></use></svg></div>
+        <div class="announcement-body">
+          <div class="announcement-title">Thông báo từ Ban quản trị</div>
+          <div class="announcement-message" id="announcementContent"></div>
+          <div class="announcement-time" id="announcementTime"></div>
         </div>
-        <div id="realPost">
-            <textarea id="content" rows="4" placeholder="Chia sẻ suy nghĩ của bạn... (Có thể xuống dòng bằng phím Enter)"></textarea>
-            <label style="display: flex; align-items: center; font-size: 13px; margin-bottom: 10px;">
-                <input type="checkbox" id="agreeRule" style="margin-right: 8px;"> Tôi đồng ý với nội quy
-            </label>
-            <button class="btn-post" onclick="postData()">Đăng bài</button>
+        <button class="announcement-close" id="announcementClose" type="button" aria-label="Đóng thông báo"><svg class="icon icon-sm"><use href="#i-x"></use></svg></button>
+      </section>
+
+      <section class="card composer" id="composerCard">
+        <div class="composer-closed" id="composerOpen" role="button" tabindex="0" aria-expanded="false">
+          <div class="avatar" id="composerAvatar">AD</div>
+          <div class="composer-placeholder">Bạn đang nghĩ gì? Hãy chia sẻ ẩn danh…</div>
+          <button class="composer-trigger" type="button" tabindex="-1" aria-label="Mở ô đăng bài"><svg class="icon"><use href="#i-spark"></use></svg></button>
         </div>
+        <form class="composer-form" id="postForm">
+          <div class="composer-divider"></div>
+          <textarea id="postContent" maxlength="1500" placeholder="Chia sẻ suy nghĩ của bạn…" aria-label="Nội dung bài viết"></textarea>
+          <div class="composer-footer">
+            <div class="composer-meta">
+              <label class="check-row"><input type="checkbox" id="agreeRule"> Tôi đồng ý với nội quy cộng đồng</label>
+              <span class="char-count"><span id="postCharCount">0</span>/1500 ký tự</span>
+            </div>
+            <button class="primary-btn" id="postSubmit" type="submit"><svg class="icon icon-sm"><use href="#i-send"></use></svg>Đăng ẩn danh</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="feed-toolbar">
+        <label class="search-wrap">
+          <svg class="icon icon-sm"><use href="#i-search"></use></svg>
+          <input class="search-input" id="searchInput" type="search" placeholder="Tìm trong các bài viết…" autocomplete="off">
+        </label>
+        <div class="sort-tabs" role="tablist" aria-label="Sắp xếp bài viết">
+          <button class="sort-tab active" type="button" role="tab" aria-selected="true" data-sort="latest">Mới nhất</button>
+          <button class="sort-tab" type="button" role="tab" aria-selected="false" data-sort="popular">Nổi bật</button>
+        </div>
+      </div>
+
+      <section class="feed" id="postList" aria-live="polite">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </section>
+    </section>
+
+    <aside class="sidebar right-sidebar" aria-label="Khám phá">
+      <button class="open-chat-card" id="openChatCard" type="button">
+        <div class="open-chat-card-head">
+          <span class="open-chat-card-title">Phòng chat cộng đồng</span>
+          <svg class="icon"><use href="#i-message"></use></svg>
+        </div>
+        <p>Trò chuyện tức thì cùng những người đang online.</p>
+      </button>
+
+      <section class="panel">
+        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>Gợi ý chủ đề</h2>
+        <div class="topic-list">
+          <div class="topic-item"><div class="topic-name">Tâm sự hôm nay</div><div class="topic-desc">Một điều bạn đang giữ trong lòng.</div></div>
+          <div class="topic-item"><div class="topic-name">Xin lời khuyên</div><div class="topic-desc">Hỏi cộng đồng về lựa chọn khó khăn.</div></div>
+          <div class="topic-item"><div class="topic-name">Chuyện vui nhỏ</div><div class="topic-desc">Lan tỏa một khoảnh khắc tích cực.</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-info"></use></svg>Quyền riêng tư</h2>
+        <p class="privacy-note"><strong>Ẩn danh với cộng đồng</strong> không có nghĩa là vô danh tuyệt đối với hệ thống. Không chia sẻ họ tên, địa chỉ, số điện thoại hoặc dữ liệu nhạy cảm.</p>
+      </section>
+    </aside>
+  </main>
+
+  <button class="chat-fab" id="chatFab" type="button" aria-label="Mở phòng chat">
+    <svg class="icon icon-lg"><use href="#i-message"></use></svg>
+    <span class="unread-badge" id="unreadBadge">0</span>
+  </button>
+
+  <div class="chat-drawer-backdrop" id="chatBackdrop"></div>
+  <aside class="chat-drawer" id="chatDrawer" aria-label="Phòng chat cộng đồng" aria-hidden="true">
+    <header class="chat-head">
+      <div class="chat-head-icon"><svg class="icon"><use href="#i-message"></use></svg></div>
+      <div class="chat-head-copy">
+        <div class="chat-title">Chat cộng đồng</div>
+        <div class="chat-status"><i class="live-dot"></i><span id="onlineCountChat">0</span> người đang online · Ẩn danh</div>
+      </div>
+      <button class="chat-close" id="chatClose" type="button" aria-label="Đóng phòng chat"><svg class="icon"><use href="#i-x"></use></svg></button>
+    </header>
+    <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+    <form class="chat-input-area" id="chatForm">
+      <textarea id="chatInput" rows="1" maxlength="500" placeholder="Nhắn tin ẩn danh…" aria-label="Tin nhắn"></textarea>
+      <button class="chat-send" type="submit" aria-label="Gửi tin nhắn"><svg class="icon"><use href="#i-send"></use></svg></button>
+    </form>
+  </aside>
+
+  <div class="modal-backdrop" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="reportTitle">Báo cáo bài viết</div>
+        <button class="modal-close" id="reportClose" type="button" aria-label="Đóng"><svg class="icon"><use href="#i-x"></use></svg></button>
+      </div>
+      <div class="modal-body">
+        <label for="reportReason">Vui lòng cho biết lý do</label>
+        <textarea id="reportReason" maxlength="500" placeholder="Ví dụ: spam, công kích, tiết lộ thông tin cá nhân…"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="reportCancel" type="button">Hủy</button>
+        <button class="primary-btn" id="reportSubmit" type="button"><svg class="icon icon-sm"><use href="#i-flag"></use></svg>Gửi báo cáo</button>
+      </div>
     </div>
+  </div>
 
-    <div id="list"></div>
-</div>
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
-<button class="chat-fab" id="chatFabBtn">💬</button>
+  <script>
+  (() => {
+    'use strict';
 
-<div id="chatModal" class="chat-modal">
-    <div class="chat-header">
-        <span>💬 Chat cộng đồng (Ẩn danh)</span>
-        <button id="closeChatBtn">✕</button>
-    </div>
-    <div id="chatMessagesList" class="chat-messages"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Nhắn tin ẩn danh..." autocomplete="off">
-        <button id="sendChatBtn">Gửi</button>
-    </div>
-</div>
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyB3xZIYvP5Pq1SXx5uqxkXqQ3LxW7Qn2Xk",
-    authDomain: "binhson-confessions.firebaseapp.com",
-    databaseURL: "https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    projectId: "binhson-confessions"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const postsRef = db.ref("confessions");
-const reportsRef = db.ref("reports");
-const announcementsRef = db.ref("announcements");
-const onlineRef = db.ref(".info/connected");
-const presenceRef = db.ref("presence");
-const chatMessagesRef = db.ref("community_chat");
-
-
-let currentUserId = null;
-let myPresenceRef = null;
-
-function getUserName() {
-    let name = localStorage.getItem("anonName");
-    if (!name) {
-        name = "Ẩn danh " + Math.floor(Math.random() * 10000);
-        localStorage.setItem("anonName", name);
-    }
-    return name;
-}
-
-function escapeHtml(text) { 
-    if (!text) return "";
-    const div = document.createElement('div'); 
-    div.textContent = text; 
-    return div.innerHTML; 
-}
-
-function formatTime(ts) {
-    if (!ts) return "";
-    const diff = Math.floor((Date.now() - ts) / 1000);
-    if (diff < 60) return "Vừa xong";
-    if (diff < 3600) return Math.floor(diff / 60) + " phút trước";
-    if (diff < 86400) return Math.floor(diff / 3600) + " giờ trước";
-    return new Date(ts).toLocaleDateString('vi-VN');
-}
-
-function isToday(ts) { 
-    return new Date(ts).toDateString() === new Date().toDateString(); 
-}
-
-function initPresence() {
-    currentUserId = getUserName();
-    myPresenceRef = presenceRef.child(currentUserId);
-    
-    onlineRef.on("value", (snap) => {
-        if (snap.val()) {
-            myPresenceRef.set({
-                online: true,
-                lastSeen: Date.now(),
-                name: currentUserId
-            });
-            myPresenceRef.onDisconnect().remove();
-        }
-    });
-    
-    presenceRef.on("value", (snap) => {
-        let onlineUsers = 0;
-        if (snap.exists()) {
-            const data = snap.val();
-            for (let key in data) {
-                if (data[key] && data[key].online !== false) {
-                    onlineUsers++;
-                }
-            }
-        }
-        document.getElementById("onlineCount").innerText = onlineUsers;
-    });
-}
-
-function showAnnouncement(message, timestamp, announcementId) {
-    const snoozeUntil = localStorage.getItem("announcement_snooze_until");
-    if (snoozeUntil && parseInt(snoozeUntil) > Date.now()) return;
-    const closedId = localStorage.getItem("closed_announcement_id");
-    if (closedId && closedId === announcementId) return;
-    const box = document.getElementById("announcementBox");
-    const content = document.getElementById("announcementContent");
-    const timeSpan = document.getElementById("announcementTime");
-    content.innerHTML = message;
-    timeSpan.innerHTML = "🕒 " + new Date(timestamp).toLocaleString('vi-VN');
-    box.style.display = "block";
-    box.setAttribute("data-current-id", announcementId);
-}
-
-function closeAnnouncement() {
-    const box = document.getElementById("announcementBox");
-    const currentId = box.getAttribute("data-current-id");
-    if (currentId) localStorage.setItem("closed_announcement_id", currentId);
-    box.style.display = "none";
-}
-
-announcementsRef.on("child_added", (snapshot) => {
-    const announcement = snapshot.val();
-    if (announcement && announcement.message && announcement.timestamp) {
-        showAnnouncement(announcement.message, announcement.timestamp, snapshot.key);
-    }
-});
-
-function reportPost(postId) {
-    const reason = prompt("📝 Nhập lý do báo cáo bài viết này:");
-    if (!reason || reason.trim() === "") {
-        alert("Bạn chưa nhập lý do báo cáo!");
-        return;
-    }
-    const reportData = {
-        reason: reason.trim(),
-        reporter: getUserName(),
-        timestamp: Date.now(),
-        postId: postId
+    const el = {
+      html: document.documentElement,
+      body: document.body,
+      themeToggle: $('#themeToggle'),
+      themeIcon: $('#themeIcon use'),
+      identityName: $('#identityName'),
+      headerAvatar: $('#headerAvatar'),
+      composerAvatar: $('#composerAvatar'),
+      composerCard: $('#composerCard'),
+      composerOpen: $('#composerOpen'),
+      postForm: $('#postForm'),
+      postContent: $('#postContent'),
+      postCharCount: $('#postCharCount'),
+      agreeRule: $('#agreeRule'),
+      postSubmit: $('#postSubmit'),
+      postList: $('#postList'),
+      searchInput: $('#searchInput'),
+      sortTabs: $$('.sort-tab'),
+      announcementBox: $('#announcementBox'),
+      announcementContent: $('#announcementContent'),
+      announcementTime: $('#announcementTime'),
+      announcementClose: $('#announcementClose'),
+      onlineCounts: [$('#onlineCountSide'), $('#onlineCountHero'), $('#onlineCountChat')],
+      postCountSide: $('#postCountSide'),
+      chatFab: $('#chatFab'),
+      openChatCard: $('#openChatCard'),
+      chatDrawer: $('#chatDrawer'),
+      chatBackdrop: $('#chatBackdrop'),
+      chatClose: $('#chatClose'),
+      chatMessages: $('#chatMessages'),
+      chatForm: $('#chatForm'),
+      chatInput: $('#chatInput'),
+      unreadBadge: $('#unreadBadge'),
+      reportModal: $('#reportModal'),
+      reportReason: $('#reportReason'),
+      reportClose: $('#reportClose'),
+      reportCancel: $('#reportCancel'),
+      reportSubmit: $('#reportSubmit'),
+      toastStack: $('#toastStack')
     };
-    reportsRef.child(postId).push(reportData)
-        .then(() => alert("✅ Cảm ơn bạn đã báo cáo."))
-        .catch(error => console.error("Lỗi:", error));
-}
 
-function openPost() { 
-    document.getElementById("realPost").style.display = "block"; 
-    document.getElementById("content").focus();
-}
+    function showBootstrapError(message) {
+      if (el.postList) {
+        el.postList.innerHTML = '';
+        const box = document.createElement('div');
+        box.className = 'card empty-state';
+        box.innerHTML = '<div class="empty-icon"><svg class="icon icon-lg"><use href="#i-info"></use></svg></div><div class="empty-title">Không thể kết nối hệ thống</div><div class="empty-text"></div>';
+        $('.empty-text', box).textContent = message;
+        el.postList.appendChild(box);
+      }
+      console.error(message);
+    }
 
-async function postData() {
-    const text = document.getElementById("content").value.trim();
-    if (!text || !document.getElementById("agreeRule").checked) {
-        alert("Vui lòng nhập nội dung và đồng ý nội quy!");
+    if (!window.firebase || typeof window.firebase.initializeApp !== 'function' || !window.firebase.database) {
+      showBootstrapError('Firebase chưa tải được. Hãy kiểm tra kết nối mạng rồi tải lại trang.');
+      return;
+    }
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyB3xZIYvP5Pq1SXx5uqxkXqQ3LxW7Qn2Xk',
+      authDomain: 'binhson-confessions.firebaseapp.com',
+      databaseURL: 'https://binhson-confessions-default-rtdb.asia-southeast1.firebasedatabase.app/',
+      projectId: 'binhson-confessions'
+    };
+
+    let db;
+    try {
+      const app = firebase.apps && firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+      db = app.database ? app.database() : firebase.database();
+    } catch (error) {
+      showBootstrapError('Không thể khởi tạo Firebase. Vui lòng kiểm tra cấu hình dự án.');
+      console.error(error);
+      return;
+    }
+
+    const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+    const refs = {
+      posts: db.ref('confessions'),
+      reports: db.ref('reports'),
+      announcements: db.ref('announcements'),
+      presence: db.ref('presence'),
+      connected: db.ref('.info/connected'),
+      chat: db.ref('community_chat')
+    };
+    const postsQuery = refs.posts.orderByChild('timestamp').limitToLast(20000);
+    const chatQuery = refs.chat.orderByChild('timestamp').limitToLast(100);
+
+    const state = {
+      posts: new Map(),
+      cards: new Map(),
+      openComments: new Set(),
+      sort: 'latest',
+      search: '',
+      postsLoaded: false,
+      feedRenderQueued: false,
+      reportPostId: null,
+      chatOpen: false,
+      unread: 0,
+      chatInitialized: false,
+      chatKeys: new Set(),
+      likePending: new Set(),
+      connectionSeen: false,
+      listenerErrorShown: new Set()
+    };
+
+    const limits = {
+      post: { max: 1500, cooldown: 15000 },
+      comment: { max: 500, cooldown: 4000 },
+      chat: { max: 500, cooldown: 1500 },
+      report: { max: 500, cooldown: 10000 }
+    };
+
+    function getStorage(name) {
+      try { return window[name]; } catch (_) { return null; }
+    }
+
+    function safeArea(area) {
+      return {
+        get(key) {
+          if (!area) return null;
+          try { return area.getItem(key); } catch (_) { return null; }
+        },
+        set(key, value) {
+          if (!area) return false;
+          try { area.setItem(key, String(value)); return true; } catch (_) { return false; }
+        },
+        remove(key) {
+          if (!area) return;
+          try { area.removeItem(key); } catch (_) {}
+        }
+      };
+    }
+
+    const local = safeArea(getStorage('localStorage'));
+    const session = safeArea(getStorage('sessionStorage'));
+
+    function makeId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID().replace(/-/g, '');
+      }
+      if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        return Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+      }
+      return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 14)}`;
+    }
+
+    function firebaseSafeKey(value) {
+      return String(value || '').replace(/[.#$\[\]\/]/g, '_').slice(0, 100) || makeId();
+    }
+
+    function getIdentity() {
+      let id = local.get('anonId');
+      let name = local.get('anonName');
+      if (!id) {
+        id = makeId();
+        local.set('anonId', id);
+      }
+      id = firebaseSafeKey(id);
+      local.set('anonId', id);
+      if (!name) {
+        const adjectives = ['Bình Yên', 'Mây Trắng', 'Ánh Sao', 'Gió Nhẹ', 'Cỏ Non', 'Nắng Mai', 'Đại Dương', 'Đom Đóm', 'Mưa Đêm', 'Lá Xanh'];
+        const number = String(Math.floor(1000 + Math.random() * 9000));
+        name = `Ẩn danh ${adjectives[Math.floor(Math.random() * adjectives.length)]} #${number}`;
+        local.set('anonName', name);
+      }
+      return { id, name: String(name).slice(0, 80) };
+    }
+
+    const identity = getIdentity();
+    let tabId = session.get('anonTabId');
+    if (!tabId) {
+      tabId = makeId().slice(0, 24);
+      session.set('anonTabId', tabId);
+    }
+    const presenceSessionId = firebaseSafeKey(`${identity.id}_${tabId}`);
+
+    function hashNumber(value) {
+      let hash = 0;
+      const text = String(value || 'anonymous');
+      for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+      return Math.abs(hash);
+    }
+
+    function avatarGradient(seed) {
+      const hue = hashNumber(seed) % 360;
+      return `linear-gradient(145deg, hsl(${hue} 72% 60%), hsl(${(hue + 48) % 360} 72% 47%))`;
+    }
+
+    function avatarLetters(name) {
+      const words = String(name || 'Ẩn danh').replace('#', '').trim().split(/\s+/).filter(Boolean);
+      const first = words.length > 1 ? words[words.length - 2][0] : (words[0] ? words[0][0] : 'A');
+      const second = words.length ? words[words.length - 1][0] : 'D';
+      return `${first || 'A'}${second || 'D'}`.toUpperCase();
+    }
+
+    function applyIdentityUI() {
+      if (el.identityName) el.identityName.textContent = identity.name;
+      [el.headerAvatar, el.composerAvatar].forEach(node => {
+        if (!node) return;
+        node.textContent = avatarLetters(identity.name);
+        node.style.background = avatarGradient(identity.id);
+      });
+    }
+
+    function iconUse(id, className = 'icon icon-sm') {
+      return `<svg class="${className}" aria-hidden="true"><use href="#${id}"></use></svg>`;
+    }
+
+    function numberTimestamp(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : Date.now();
+    }
+
+    function formatRelativeTime(timestamp) {
+      if (!timestamp) return 'Vừa xong';
+      const seconds = Math.max(0, Math.floor((Date.now() - numberTimestamp(timestamp)) / 1000));
+      if (seconds < 45) return 'Vừa xong';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)} phút trước`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)} giờ trước`;
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)} ngày trước`;
+      return new Date(numberTimestamp(timestamp)).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function formatClock(timestamp) {
+      return new Date(numberTimestamp(timestamp)).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function isToday(timestamp) {
+      if (!timestamp) return true;
+      const a = new Date(numberTimestamp(timestamp));
+      const b = new Date();
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function normalizeText(value, max) {
+      return String(value || '').replace(/\r\n/g, '\n').trim().slice(0, max);
+    }
+
+    function cooldownReady(key, ms) {
+      const storageKey = `cooldown_${key}`;
+      const last = Number(local.get(storageKey) || 0);
+      const remaining = ms - (Date.now() - last);
+      return {
+        ready: remaining <= 0,
+        remaining: Math.ceil(Math.max(0, remaining) / 1000),
+        commit: () => local.set(storageKey, Date.now())
+      };
+    }
+
+    function toast(message, type = 'info', duration = 3200) {
+      if (!el.toastStack) return;
+      const item = document.createElement('div');
+      item.className = `toast ${type}`;
+      const iconId = type === 'success' ? 'i-check' : type === 'error' ? 'i-x' : 'i-info';
+      item.innerHTML = `<div class="toast-icon">${iconUse(iconId)}</div><div class="toast-message"></div>`;
+      $('.toast-message', item).textContent = message;
+      el.toastStack.appendChild(item);
+      window.setTimeout(() => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(12px)';
+        window.setTimeout(() => item.remove(), 180);
+      }, duration);
+    }
+
+    function describeFirebaseError(error, fallback) {
+      const code = String(error && error.code || '');
+      if (code.includes('permission-denied')) return `${fallback} Quyền truy cập Firebase đang bị từ chối.`;
+      if (code.includes('network')) return `${fallback} Kết nối mạng đang không ổn định.`;
+      return fallback;
+    }
+
+    function showListenerError(area, error, message) {
+      console.error(error);
+      if (state.listenerErrorShown.has(area)) return;
+      state.listenerErrorShown.add(area);
+      toast(describeFirebaseError(error, message), 'error', 6000);
+    }
+
+    function setButtonBusy(button, busy, label) {
+      if (!button) return;
+      if (busy) {
+        if (!button.dataset.original) button.dataset.original = button.innerHTML;
+        button.disabled = true;
+        button.textContent = label || 'Đang xử lý…';
+      } else {
+        button.disabled = false;
+        if (button.dataset.original) {
+          button.innerHTML = button.dataset.original;
+          delete button.dataset.original;
+        }
+      }
+    }
+
+    function initTheme() {
+      const stored = local.get('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(stored || (prefersDark ? 'dark' : 'light'));
+    }
+
+    function applyTheme(theme) {
+      const next = theme === 'dark' ? 'dark' : 'light';
+      el.html.dataset.theme = next;
+      local.set('theme', next);
+      if (el.themeIcon) el.themeIcon.setAttribute('href', next === 'dark' ? '#i-sun' : '#i-moon');
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', next === 'dark' ? '#191b27' : '#6d5dfc');
+    }
+
+    function initPresence() {
+      const myPresence = refs.presence.child(presenceSessionId);
+      refs.connected.on('value', snapshot => {
+        const connected = snapshot.val() === true;
+        if (connected) {
+          myPresence.onDisconnect().remove();
+          myPresence.set({
+            online: true,
+            userId: identity.id,
+            name: identity.name,
+            lastSeen: serverTimestamp
+          }).catch(error => showListenerError('presence-write', error, 'Không thể cập nhật trạng thái trực tuyến.'));
+        } else if (state.connectionSeen) {
+          toast('Kết nối thời gian thực đang tạm gián đoạn. Hệ thống sẽ tự kết nối lại.', 'error', 4500);
+        }
+        state.connectionSeen = true;
+      }, error => showListenerError('connection', error, 'Không thể kiểm tra kết nối Firebase.'));
+
+      refs.presence.on('value', snapshot => {
+        const users = new Set();
+        snapshot.forEach(child => {
+          const value = child.val() || {};
+          if (value.online !== false) users.add(value.userId || child.key);
+        });
+        el.onlineCounts.forEach(node => { if (node) node.textContent = String(users.size); });
+      }, error => showListenerError('presence-read', error, 'Không thể tải số người đang online.'));
+    }
+
+    function initAnnouncement() {
+      refs.announcements.orderByChild('timestamp').limitToLast(1).on('value', snapshot => {
+        let latest = null;
+        snapshot.forEach(child => { latest = { id: child.key, ...(child.val() || {}) }; });
+        if (!latest || !latest.message || !latest.timestamp) {
+          el.announcementBox.classList.remove('show');
+          return;
+        }
+        if (local.get('closed_announcement_id') === latest.id) return;
+        el.announcementContent.textContent = String(latest.message);
+        el.announcementTime.textContent = new Date(numberTimestamp(latest.timestamp)).toLocaleString('vi-VN');
+        el.announcementBox.dataset.id = latest.id;
+        el.announcementBox.classList.add('show');
+      }, error => showListenerError('announcements', error, 'Không thể tải thông báo.'));
+    }
+
+    function countComments(comments) {
+      if (!comments || typeof comments !== 'object') return 0;
+      let total = 0;
+      Object.values(comments).forEach(comment => {
+        if (!comment || typeof comment !== 'object') return;
+        total += 1 + countComments(comment.replies);
+      });
+      return total;
+    }
+
+    function commentsFingerprint(comments) {
+      if (!comments || typeof comments !== 'object') return '0';
+      const parts = [];
+      const walk = object => {
+        Object.keys(object).sort().forEach(key => {
+          const comment = object[key];
+          if (!comment || typeof comment !== 'object') return;
+          parts.push(key, String(comment.timestamp || ''), String(comment.text || ''), String(comment.name || comment.authorName || ''));
+          if (comment.replies && typeof comment.replies === 'object') walk(comment.replies);
+        });
+      };
+      walk(comments);
+      return parts.join('\u001f');
+    }
+
+    function getPostAuthor(post) {
+      return post.authorName || post.name || 'Thành viên ẩn danh';
+    }
+
+    function scheduleFeedRender() {
+      if (state.feedRenderQueued) return;
+      state.feedRenderQueued = true;
+      window.requestAnimationFrame(() => {
+        state.feedRenderQueued = false;
+        renderFeed();
+      });
+    }
+
+    function getVisiblePosts() {
+      const query = state.search.trim().toLocaleLowerCase('vi-VN');
+      let posts = Array.from(state.posts.entries()).map(([id, post]) => ({ id, ...(post || {}) }));
+      if (query) posts = posts.filter(post => String(post.content || '').toLocaleLowerCase('vi-VN').includes(query));
+      posts.sort((a, b) => {
+        if (state.sort === 'popular') {
+          const score = ((Number(b.likes) || 0) + countComments(b.comments) * 2) - ((Number(a.likes) || 0) + countComments(a.comments) * 2);
+          if (score) return score;
+        }
+        return numberTimestamp(b.timestamp) - numberTimestamp(a.timestamp);
+      });
+      return posts;
+    }
+
+    function renderFeed() {
+      const posts = getVisiblePosts();
+      if (el.postCountSide) el.postCountSide.textContent = String(posts.length);
+
+      if (!state.postsLoaded && !posts.length) return;
+
+      if (!posts.length) {
+        state.cards.forEach(card => card.remove());
+        const oldEmpty = $('[data-feed-empty]', el.postList);
+        if (!oldEmpty) {
+          const empty = document.createElement('div');
+          empty.className = 'card empty-state';
+          empty.dataset.feedEmpty = 'true';
+          empty.innerHTML = `<div class="empty-icon">${iconUse('i-search', 'icon icon-lg')}</div><div class="empty-title">Chưa tìm thấy bài viết</div><div class="empty-text">Thử từ khóa khác hoặc đăng bài đầu tiên của bạn.</div>`;
+          el.postList.replaceChildren(empty);
+        }
         return;
-    }
-    const btn=document.querySelector(".btn-post");
-    btn.disabled=true;
-    try{
-        await postsRef.push({content:text,timestamp:Date.now(),likes:0,likedBy:{}});
-        alert("✅ Đăng bài thành công!");
-        document.getElementById("content").value="";
-        document.getElementById("agreeRule").checked=false;
-        document.getElementById("realPost").style.display="none";
-    }catch(e){
-        console.error(e);
-        alert("Có lỗi khi đăng bài.");
-    }
-    btn.disabled=false;
-}
+      }
 
-function likePost(postId) {
-    const userId = getUserName();
-    const postRef = db.ref(`confessions/${postId}`);
-    postRef.transaction(post => {
-        if (!post) return post;
-        if (!post.likedBy) post.likedBy = {};
-        if (post.likedBy[userId]) {
-            post.likes = (post.likes || 0) - 1;
-            delete post.likedBy[userId];
-        } else {
-            post.likes = (post.likes || 0) + 1;
-            post.likedBy[userId] = true;
+      const empty = $('[data-feed-empty]', el.postList);
+      if (empty) empty.remove();
+      $$('.skeleton', el.postList).forEach(node => node.remove());
+
+      const visibleIds = new Set(posts.map(post => post.id));
+      posts.forEach((post, index) => {
+        let card = state.cards.get(post.id);
+        if (!card) {
+          card = buildPostCard(post.id);
+          state.cards.set(post.id, card);
         }
-        return post;
-    }).catch(err => console.error("Lỗi like:", err));
-}
+        updatePostCard(card, post, posts.length - index);
+        const currentAtIndex = el.postList.children[index];
+        if (currentAtIndex !== card) el.postList.insertBefore(card, currentAtIndex || null);
+      });
 
-function toggleComment(id) {
-    const section = document.getElementById(`comment-section-${id}`);
-    if (!section) return;
-    const isHidden = section.style.display === 'none' || section.style.display === '';
-    section.style.display = isHidden ? 'block' : 'none';
-    if (isHidden && !section.hasAttribute('data-listener')) {
-        attachCommentsListener(id);
-        section.setAttribute('data-listener', 'true');
+      Array.from(el.postList.children).forEach(node => {
+        if (node.classList.contains('post-card') && !visibleIds.has(node.dataset.postId)) node.remove();
+      });
     }
-}
 
-function attachCommentsListener(postId) {
-    const listDiv = document.getElementById(`comment-list-${postId}`);
-    const countSpan = document.getElementById(`comment-count-${postId}`);
-    
-    db.ref(`confessions/${postId}/comments`).on('value', snap => {
-        const comments = snap.val();
-        let count = 0;
-        if (comments) for (let k in comments) count++;
-        if (countSpan) {
-            if (count === 0) countSpan.innerText = "Chưa có bình luận";
-            else if (count === 1) countSpan.innerText = "1 bình luận";
-            else countSpan.innerText = count + " bình luận";
-        }
-        if (listDiv) {
-            listDiv.innerHTML = '';
-            if (comments) listDiv.appendChild(renderCommentTree(postId, comments));
-        }
-    });
-}
-
-function renderCommentTree(postId, commentsObj) {
-    const fragment = document.createDocumentFragment();
-    for (let cmtId in commentsObj) {
-        const cmt = commentsObj[cmtId];
-        const div = document.createElement('div');
-        div.className = 'comment-node';
-        div.innerHTML = `
-            <div class="comment-main">
-                <div class="avatar" style="width:32px; height:32px; font-size:14px;">🙂</div>
-                <div class="comment-bubble">
-                    <div class="comment-name">${escapeHtml(cmt.name)}</div>
-                    <div class="comment-text">${escapeHtml(cmt.text)}</div>
-                    <div class="comment-actions"><span onclick="showReplyBox('${cmtId}')">Trả lời</span></div>
-                </div>
+    function buildPostCard(postId) {
+      const card = document.createElement('article');
+      card.className = 'card post-card';
+      card.dataset.postId = postId;
+      card.innerHTML = `
+        <div class="post-head">
+          <div class="avatar post-avatar"></div>
+          <div class="post-identity">
+            <div class="post-author-line">
+              <span class="post-author"></span>
+              <span class="post-number"></span>
+              <span class="today-badge" hidden>HÔM NAY</span>
             </div>
-            <div class="reply-input-box" id="reply-box-${cmtId}">
-                <input type="text" placeholder="Viết trả lời..." onkeypress="if(event.key==='Enter') addReply('${postId}', '${cmtId}', this)">
-            </div>
-            <div class="reply-children" id="replies-${cmtId}"></div>
-        `;
-        if (cmt.replies) {
-            div.querySelector('.reply-children').appendChild(renderCommentTree(postId, cmt.replies));
-        }
-        fragment.appendChild(div);
-    }
-    return fragment;
-}
-
-function showReplyBox(cmtId) {
-    const box = document.getElementById(`reply-box-${cmtId}`);
-    if (box) {
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
-        if (box.style.display === 'block') box.querySelector('input').focus();
-    }
-}
-
-function addComment(postId) {
-    const input = document.getElementById(`comment-input-${postId}`);
-    const text = input.value.trim();
-    if (!text) return;
-    db.ref(`confessions/${postId}/comments`).push({ 
-        name: getUserName(), text, timestamp: Date.now() 
-    });
-    input.value = '';
-}
-
-function addReply(postId, parentId, input) {
-    const text = input.value.trim();
-    if (!text) return;
-    db.ref(`confessions/${postId}/comments/${parentId}/replies`).push({ 
-        name: getUserName(), text, timestamp: Date.now() 
-    });
-    input.value = '';
-    const box = document.getElementById(`reply-box-${parentId}`);
-    if (box) box.style.display = 'none';
-}
-
-function updatePostNumbers() {
-    const cards = document.querySelectorAll('#list .card');
-    const total = cards.length;
-    cards.forEach((card, index) => {
-        const numberSpan = card.querySelector('.post-number');
-        if (numberSpan) {
-            numberSpan.innerText = `#${total - index}`;
-        }
-    });
-}
-
-// Hàm render bài viết - KHÔNG xóa bài cũ
-function renderPost(id, post) {
-    // Kiểm tra nếu bài viết đã tồn tại thì không render lại
-    if (document.querySelector(`.card[data-id="${id}"]`)) {
-        // Cập nhật like count nếu cần
-        const likeSpan = document.getElementById(`like-count-${id}`);
-        if (likeSpan && likeSpan.innerText != (post.likes || 0)) {
-            likeSpan.innerText = post.likes || 0;
-        }
-        return;
-    }
-    
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.setAttribute('data-id', id);
-    
-    card.innerHTML = `
-        <div class="post-header">
-            <span class="post-number">#?</span>
-            <span class="post-author">Ẩn danh</span>
-            <span class="post-time">${formatTime(post.timestamp)}</span>
-            ${isToday(post.timestamp) ? '<span class="today-badge">Hôm nay</span>' : ''}
+            <div class="post-time"></div>
+          </div>
+          <button class="more-btn" type="button" data-action="report" aria-label="Báo cáo bài viết">${iconUse('i-more')}</button>
         </div>
-        <div class="post-content">${escapeHtml(post.content)}</div>
+        <div class="post-content"></div>
         <div class="post-stats">
-            <span>👍 <span id="like-count-${id}">${post.likes || 0}</span></span>
-            <span>💬 <span id="comment-count-${id}">Đang tải...</span></span>
+          <span>${iconUse('i-heart')}<b data-like-count>0</b> lượt thích</span>
+          <span>${iconUse('i-message')}<b data-comment-count>0</b> bình luận</span>
         </div>
         <div class="post-actions">
-            <button onclick="likePost('${id}')">👍 Thích</button>
-            <button onclick="toggleComment('${id}')">💬 Bình luận</button>
-            <button onclick="reportPost('${id}')">❌ Báo cáo</button>
+          <button class="action-btn" type="button" data-action="like">${iconUse('i-heart')}<span>Thích</span></button>
+          <button class="action-btn" type="button" data-action="comments" aria-expanded="false">${iconUse('i-message')}<span>Bình luận</span></button>
+          <button class="action-btn report" type="button" data-action="report">${iconUse('i-flag')}<span>Báo cáo</span></button>
         </div>
-        <div id="comment-section-${id}" class="comment-section">
-            <div class="comment-input-wrapper">
-                <input type="text" id="comment-input-${id}" placeholder="Viết bình luận..." onkeypress="if(event.key==='Enter') addComment('${id}')">
+        <section class="comments">
+          <form class="comment-composer" data-comment-form>
+            <div class="comment-avatar"></div>
+            <input type="text" maxlength="500" placeholder="Viết bình luận ẩn danh…" aria-label="Bình luận" autocomplete="off">
+            <button class="send-mini" type="submit" aria-label="Gửi bình luận">${iconUse('i-send')}</button>
+          </form>
+          <div class="comment-list" data-comment-list><div class="empty-comments">Chưa có bình luận. Hãy là người đầu tiên.</div></div>
+        </section>`;
+
+      const commentAvatar = $('.comment-avatar', card);
+      commentAvatar.textContent = avatarLetters(identity.name);
+      commentAvatar.style.background = avatarGradient(identity.id);
+      return card;
+    }
+
+    function updatePostCard(card, post, number) {
+      const author = getPostAuthor(post);
+      const avatar = $('.post-avatar', card);
+      avatar.textContent = avatarLetters(author);
+      avatar.style.background = avatarGradient(post.authorId || post.id);
+      $('.post-author', card).textContent = author;
+      $('.post-number', card).textContent = `#${number}`;
+      $('.post-time', card).textContent = formatRelativeTime(post.timestamp);
+      const today = $('.today-badge', card);
+      today.hidden = !isToday(post.timestamp);
+      $('.post-content', card).textContent = String(post.content || '');
+      $('[data-like-count]', card).textContent = String(Math.max(0, Number(post.likes) || 0));
+      $('[data-comment-count]', card).textContent = String(countComments(post.comments));
+
+      const likeButton = $('[data-action="like"]', card);
+      likeButton.classList.toggle('liked', Boolean(post.likedBy && post.likedBy[identity.id]));
+      likeButton.disabled = state.likePending.has(post.id);
+
+      const section = $('.comments', card);
+      const commentsButton = $('[data-action="comments"]', card);
+      const open = state.openComments.has(post.id);
+      section.classList.toggle('open', open);
+      commentsButton.setAttribute('aria-expanded', String(open));
+      if (open) {
+        const fingerprint = commentsFingerprint(post.comments);
+        if (section.dataset.commentsFingerprint !== fingerprint) {
+          renderComments(post.id, post.comments, section);
+          section.dataset.commentsFingerprint = fingerprint;
+        }
+      }
+    }
+
+    function initPosts() {
+      const onError = error => {
+        state.postsLoaded = true;
+        scheduleFeedRender();
+        showListenerError('posts', error, 'Không thể tải danh sách bài viết.');
+      };
+
+      postsQuery.on('child_added', snapshot => {
+        state.posts.set(snapshot.key, snapshot.val() || {});
+        scheduleFeedRender();
+      }, onError);
+      postsQuery.on('child_changed', snapshot => {
+        state.posts.set(snapshot.key, snapshot.val() || {});
+        scheduleFeedRender();
+      }, onError);
+      postsQuery.on('child_removed', snapshot => {
+        state.posts.delete(snapshot.key);
+        state.openComments.delete(snapshot.key);
+        const card = state.cards.get(snapshot.key);
+        if (card) card.remove();
+        state.cards.delete(snapshot.key);
+        scheduleFeedRender();
+      }, onError);
+      postsQuery.once('value').then(() => {
+        state.postsLoaded = true;
+        scheduleFeedRender();
+      }).catch(onError);
+    }
+
+    async function submitPost(event) {
+      event.preventDefault();
+      const content = normalizeText(el.postContent.value, limits.post.max);
+      if (!content) return toast('Bạn chưa nhập nội dung bài viết.', 'error');
+      if (!el.agreeRule.checked) return toast('Bạn cần đồng ý với nội quy trước khi đăng.', 'error');
+      const cooldown = cooldownReady('post', limits.post.cooldown);
+      if (!cooldown.ready) return toast(`Vui lòng chờ ${cooldown.remaining} giây trước khi đăng bài tiếp theo.`, 'error');
+
+      setButtonBusy(el.postSubmit, true, 'Đang đăng…');
+      try {
+        await refs.posts.push({
+          content,
+          timestamp: serverTimestamp,
+          likes: 0,
+          authorId: identity.id,
+          authorName: identity.name
+        });
+        cooldown.commit();
+        el.postContent.value = '';
+        el.postCharCount.textContent = '0';
+        el.agreeRule.checked = false;
+        el.composerCard.classList.remove('open');
+        el.composerOpen.setAttribute('aria-expanded', 'false');
+        toast('Bài viết đã được đăng ẩn danh.', 'success');
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể đăng bài.'), 'error', 5000);
+      } finally {
+        setButtonBusy(el.postSubmit, false);
+      }
+    }
+
+    async function likePost(postId) {
+      if (state.likePending.has(postId)) return;
+      state.likePending.add(postId);
+      scheduleFeedRender();
+      try {
+        await refs.posts.child(postId).transaction(post => {
+          if (!post) return post;
+          post.likes = Math.max(0, Number(post.likes) || 0);
+          post.likedBy = post.likedBy && typeof post.likedBy === 'object' ? post.likedBy : {};
+          if (post.likedBy[identity.id]) {
+            delete post.likedBy[identity.id];
+            post.likes = Math.max(0, post.likes - 1);
+          } else {
+            post.likedBy[identity.id] = true;
+            post.likes += 1;
+          }
+          return post;
+        });
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể cập nhật lượt thích.'), 'error');
+      } finally {
+        state.likePending.delete(postId);
+        scheduleFeedRender();
+      }
+    }
+
+    function toggleComments(postId, card) {
+      const section = $('.comments', card);
+      if (!section) return;
+      if (state.openComments.has(postId)) {
+        state.openComments.delete(postId);
+        section.classList.remove('open');
+        $('[data-action="comments"]', card).setAttribute('aria-expanded', 'false');
+      } else {
+        state.openComments.add(postId);
+        section.classList.add('open');
+        $('[data-action="comments"]', card).setAttribute('aria-expanded', 'true');
+        const post = state.posts.get(postId) || {};
+        renderComments(postId, post.comments, section);
+        section.dataset.commentsFingerprint = commentsFingerprint(post.comments);
+        const input = $('[data-comment-form] input', section);
+        if (input) input.focus();
+      }
+    }
+
+    function captureReplyDrafts(list) {
+      const drafts = new Map();
+      $$('.comment-node', list).forEach(node => {
+        const form = $('[data-reply-form]', node);
+        const input = form && $('input', form);
+        if (!node.dataset.commentPath || !form || !input) return;
+        if (form.classList.contains('open') || input.value) {
+          drafts.set(node.dataset.commentPath, { open: form.classList.contains('open'), value: input.value });
+        }
+      });
+      return drafts;
+    }
+
+    function renderComments(postId, comments, section) {
+      const list = $('[data-comment-list]', section);
+      if (!list) return;
+      const drafts = captureReplyDrafts(list);
+      list.innerHTML = '';
+      if (!comments || typeof comments !== 'object' || !Object.keys(comments).length) {
+        list.innerHTML = '<div class="empty-comments">Chưa có bình luận. Hãy là người đầu tiên.</div>';
+        return;
+      }
+      list.appendChild(buildCommentTree(postId, comments, '', drafts));
+    }
+
+    function buildCommentTree(postId, comments, parentPath, drafts) {
+      const fragment = document.createDocumentFragment();
+      const entries = Object.entries(comments)
+        .filter(([, comment]) => comment && typeof comment === 'object')
+        .sort(([, a], [, b]) => numberTimestamp(a.timestamp) - numberTimestamp(b.timestamp));
+
+      entries.forEach(([commentId, comment]) => {
+        const path = parentPath ? `${parentPath}/replies/${commentId}` : commentId;
+        const node = document.createElement('div');
+        node.className = 'comment-node';
+        node.dataset.commentPath = path;
+        node.innerHTML = `
+          <div class="comment-row">
+            <div class="comment-avatar"></div>
+            <div class="comment-main">
+              <div class="comment-bubble"><div class="comment-name"></div><div class="comment-text"></div></div>
+              <div class="comment-meta"><span></span><button class="reply-link" type="button" data-action="reply">Trả lời</button></div>
             </div>
-            <div id="comment-list-${id}"></div>
-        </div>
-    `;
-    
-    const list = document.getElementById("list");
-    list.prepend(card);
-    updatePostNumbers();
-    
-    db.ref(`confessions/${id}/likes`).on('value', s => {
-        const likeSpan = document.getElementById(`like-count-${id}`);
-        if (likeSpan) likeSpan.innerText = s.val() || 0;
-    });
-    
-    attachCommentsListener(id);
-}
+          </div>
+          <form class="reply-form" data-reply-form>
+            <input type="text" maxlength="500" placeholder="Viết câu trả lời…" autocomplete="off">
+            <button class="send-mini" type="submit" aria-label="Gửi trả lời">${iconUse('i-send')}</button>
+          </form>
+          <div class="reply-children"></div>`;
 
-// Load bài viết - GIỮ NGUYÊN bài cũ, chỉ thêm bài mới
-function loadApprovedPosts() {
-    postsRef.once("value", (snapshot) => {
-        const posts = [];
-        snapshot.forEach(child => {
-            posts.push({
-                id: child.key,
-                ...child.val()
-            });
+        const name = comment.name || comment.authorName || 'Thành viên ẩn danh';
+        const avatar = $('.comment-avatar', node);
+        avatar.textContent = avatarLetters(name);
+        avatar.style.background = avatarGradient(comment.authorId || path);
+        $('.comment-name', node).textContent = name;
+        $('.comment-text', node).textContent = String(comment.text || '');
+        $('.comment-meta span', node).textContent = formatRelativeTime(comment.timestamp);
+
+        const draft = drafts.get(path);
+        if (draft) {
+          const form = $('[data-reply-form]', node);
+          const input = $('input', form);
+          input.value = draft.value;
+          form.classList.toggle('open', draft.open || Boolean(draft.value));
+        }
+
+        if (comment.replies && typeof comment.replies === 'object') {
+          $('.reply-children', node).appendChild(buildCommentTree(postId, comment.replies, path, drafts));
+        }
+        fragment.appendChild(node);
+      });
+      return fragment;
+    }
+
+    async function submitComment(postId, input, parentPath = '') {
+      const text = normalizeText(input.value, limits.comment.max);
+      if (!text) return false;
+      const cooldown = cooldownReady('comment', limits.comment.cooldown);
+      if (!cooldown.ready) {
+        toast(`Vui lòng chờ ${cooldown.remaining} giây trước khi bình luận tiếp.`, 'error');
+        return false;
+      }
+
+      const commentsRef = refs.posts.child(postId).child('comments');
+      const target = parentPath ? commentsRef.child(parentPath).child('replies') : commentsRef;
+      try {
+        await target.push({
+          name: identity.name,
+          authorId: identity.id,
+          text,
+          timestamp: serverTimestamp
         });
-        
-        posts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        const list = document.getElementById("list");
-        list.innerHTML = '';
-        
-        posts.forEach(post => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.setAttribute('data-id', post.id);
-            
-            card.innerHTML = `
-                <div class="post-header">
-                    <span class="post-number">#?</span>
-                    <span class="post-author">Ẩn danh</span>
-                    <span class="post-time">${formatTime(post.timestamp)}</span>
-                    ${isToday(post.timestamp) ? '<span class="today-badge">Hôm nay</span>' : ''}
-                </div>
-                <div class="post-content">${escapeHtml(post.content)}</div>
-                <div class="post-stats">
-                    <span>👍 <span id="like-count-${post.id}">${post.likes || 0}</span></span>
-                    <span>💬 <span id="comment-count-${post.id}">Đang tải...</span></span>
-                </div>
-                <div class="post-actions">
-                    <button onclick="likePost('${post.id}')">👍 Thích</button>
-                    <button onclick="toggleComment('${post.id}')">💬 Bình luận</button>
-                    <button onclick="reportPost('${post.id}')">❌ Báo cáo</button>
-                </div>
-                <div id="comment-section-${post.id}" class="comment-section">
-                    <div class="comment-input-wrapper">
-                        <input type="text" id="comment-input-${post.id}" placeholder="Viết bình luận..." onkeypress="if(event.key==='Enter') addComment('${post.id}')">
-                    </div>
-                    <div id="comment-list-${post.id}"></div>
-                </div>
-            `;
-            
-            list.appendChild(card);
-            
-            db.ref(`confessions/${post.id}/likes`).on('value', s => {
-                const span = document.getElementById(`like-count-${post.id}`);
-                if (span) span.innerText = s.val() || 0;
-            });
-            
-            attachCommentsListener(post.id);
+        cooldown.commit();
+        input.value = '';
+        const replyForm = input.closest('.reply-form');
+        if (replyForm) replyForm.classList.remove('open');
+        return true;
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể gửi bình luận.'), 'error');
+        return false;
+      }
+    }
+
+    function openReport(postId) {
+      state.reportPostId = postId;
+      el.reportReason.value = '';
+      el.reportModal.classList.add('show');
+      el.body.classList.add('no-scroll');
+      window.setTimeout(() => el.reportReason.focus(), 50);
+    }
+
+    function closeReport() {
+      state.reportPostId = null;
+      el.reportModal.classList.remove('show');
+      if (!state.chatOpen) el.body.classList.remove('no-scroll');
+    }
+
+    async function submitReport() {
+      const reason = normalizeText(el.reportReason.value, limits.report.max);
+      if (!state.reportPostId || !reason) return toast('Vui lòng nhập lý do báo cáo.', 'error');
+      const cooldown = cooldownReady('report', limits.report.cooldown);
+      if (!cooldown.ready) return toast(`Vui lòng chờ ${cooldown.remaining} giây trước khi gửi báo cáo khác.`, 'error');
+      const postId = state.reportPostId;
+      setButtonBusy(el.reportSubmit, true, 'Đang gửi…');
+      try {
+        await refs.reports.child(postId).push({
+          postId,
+          reason,
+          reporterId: identity.id,
+          reporter: identity.name,
+          timestamp: serverTimestamp
         });
-        
-        updatePostNumbers();
-    });
-}
-
-// Lắng nghe bài viết mới - KHÔNG làm mất bài cũ
-postsRef.on("child_added", (snapshot) => {
-    if (!document.querySelector(`.card[data-id="${snapshot.key}"]`)) {
-        renderPost(snapshot.key, snapshot.val());
+        cooldown.commit();
+        closeReport();
+        toast('Cảm ơn bạn. Báo cáo đã được gửi tới quản trị viên.', 'success');
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể gửi báo cáo.'), 'error');
+      } finally {
+        setButtonBusy(el.reportSubmit, false);
+      }
     }
-});
 
-postsRef.on("child_changed", (snapshot) => {
-    const post = snapshot.val();
-    const likeSpan = document.getElementById(`like-count-${snapshot.key}`);
-    if (likeSpan && likeSpan.innerText != (post.likes || 0)) {
-        likeSpan.innerText = post.likes || 0;
-    }
-});
-
-postsRef.on("child_removed", (snapshot) => {
-    const card = document.querySelector(`.card[data-id="${snapshot.key}"]`);
-    if (card) {
-        card.remove();
-        updatePostNumbers();
-    }
-});
-
-// Chat functionality
-let chatModal = document.getElementById("chatModal");
-let chatMessagesDiv = document.getElementById("chatMessagesList");
-let chatInput = document.getElementById("chatInput");
-let sendBtn = document.getElementById("sendChatBtn");
-let fabBtn = document.getElementById("chatFabBtn");
-let closeChatBtn = document.getElementById("closeChatBtn");
-
-function scrollChatBottom() {
-    if (chatMessagesDiv) chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-}
-
-function sendChatMessage() {
-    let text = chatInput.value.trim();
-    if (!text) return;
-    chatMessagesRef.push({
-        name: getUserName(),
-        text: text,
-        timestamp: Date.now()
-    }).then(() => {
-        chatInput.value = "";
+    function openChat() {
+      state.chatOpen = true;
+      state.unread = 0;
+      updateUnread();
+      el.chatDrawer.classList.add('show');
+      el.chatBackdrop.classList.add('show');
+      el.chatDrawer.setAttribute('aria-hidden', 'false');
+      el.body.classList.add('no-scroll');
+      window.setTimeout(() => {
         scrollChatBottom();
-    }).catch(err => console.error("Lỗi gửi tin nhắn:", err));
-}
+        el.chatInput.focus();
+      }, 180);
+    }
 
-function renderChatMessage(snapshot) {
-    const msg = snapshot.val();
-    if (!msg) return;
-    const currentUser = getUserName();
-    const isOwn = (msg.name === currentUser);
-    const bubbleDiv = document.createElement("div");
-    bubbleDiv.className = `chat-bubble ${isOwn ? 'own' : 'other'}`;
-    const timeStr = new Date(msg.timestamp).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
-    bubbleDiv.innerHTML = `
-        <div class="chat-name">${escapeHtml(msg.name)}</div>
-        <div>${escapeHtml(msg.text)}</div>
-        <div class="chat-time">${timeStr}</div>
-    `;
-    chatMessagesDiv.appendChild(bubbleDiv);
-    scrollChatBottom();
-}
+    function closeChat() {
+      state.chatOpen = false;
+      el.chatDrawer.classList.remove('show');
+      el.chatBackdrop.classList.remove('show');
+      el.chatDrawer.setAttribute('aria-hidden', 'true');
+      if (!el.reportModal.classList.contains('show')) el.body.classList.remove('no-scroll');
+    }
 
-chatMessagesRef.limitToLast(100).on("child_added", renderChatMessage);
+    function updateUnread() {
+      el.unreadBadge.textContent = state.unread > 99 ? '99+' : String(state.unread);
+      el.unreadBadge.classList.toggle('show', state.unread > 0);
+    }
 
-sendBtn.addEventListener("click", sendChatMessage);
-chatInput.addEventListener("keypress", (e) => { if(e.key === "Enter") sendChatMessage(); });
+    function isChatNearBottom() {
+      return el.chatMessages.scrollHeight - el.chatMessages.scrollTop - el.chatMessages.clientHeight < 90;
+    }
 
-fabBtn.addEventListener("click", () => {
-    chatModal.classList.toggle("show");
-    if (chatModal.classList.contains("show")) scrollChatBottom();
-});
-closeChatBtn.addEventListener("click", () => chatModal.classList.remove("show"));
+    function scrollChatBottom() {
+      el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+    }
 
-loadApprovedPosts();
-initPresence();
+    function initChat() {
+      const onError = error => showListenerError('chat', error, 'Không thể tải phòng chat.');
+      chatQuery.on('child_added', snapshot => {
+        const message = snapshot.val() || {};
+        if (!message.text || state.chatKeys.has(snapshot.key)) return;
+        const shouldStick = !state.chatInitialized || isChatNearBottom() || (message.authorId ? message.authorId === identity.id : message.name === identity.name);
+        state.chatKeys.add(snapshot.key);
+        renderChatMessage(snapshot.key, message);
+        if (state.chatInitialized && !state.chatOpen && message.authorId !== identity.id && message.name !== identity.name) {
+          state.unread += 1;
+          updateUnread();
+        }
+        if (shouldStick) window.requestAnimationFrame(scrollChatBottom);
+      }, onError);
+      chatQuery.on('child_changed', snapshot => {
+        const message = snapshot.val() || {};
+        if (message.text) renderChatMessage(snapshot.key, message);
+      }, onError);
+      chatQuery.on('child_removed', snapshot => {
+        state.chatKeys.delete(snapshot.key);
+        const node = el.chatMessages.querySelector(`[data-message-id="${snapshot.key}"]`);
+        if (node) node.remove();
+      }, onError);
+      chatQuery.once('value').then(() => {
+        state.chatInitialized = true;
+        scrollChatBottom();
+      }).catch(onError);
+    }
 
-console.log("✅ Diễn đàn + Chat cộng đồng đã sẵn sàng!");
-</script>
+    function renderChatMessage(messageId, message) {
+      const own = message.authorId ? message.authorId === identity.id : message.name === identity.name;
+      let wrapper = el.chatMessages.querySelector(`[data-message-id="${messageId}"]`);
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.dataset.messageId = messageId;
+        el.chatMessages.appendChild(wrapper);
+      }
+      wrapper.className = `chat-message ${own ? 'own' : 'other'}`;
+      wrapper.innerHTML = '<div class="chat-name"></div><div class="chat-bubble"></div><div class="chat-time"></div>';
+      $('.chat-name', wrapper).textContent = own ? 'Bạn' : (message.name || 'Thành viên ẩn danh');
+      $('.chat-bubble', wrapper).textContent = String(message.text || '');
+      $('.chat-time', wrapper).textContent = formatClock(message.timestamp);
+    }
+
+    async function submitChat(event) {
+      event.preventDefault();
+      const text = normalizeText(el.chatInput.value, limits.chat.max);
+      if (!text) return;
+      const cooldown = cooldownReady('chat', limits.chat.cooldown);
+      if (!cooldown.ready) return toast('Bạn đang gửi quá nhanh. Hãy chờ một chút.', 'error');
+      const button = $('button[type="submit"]', el.chatForm);
+      button.disabled = true;
+      try {
+        await refs.chat.push({ name: identity.name, authorId: identity.id, text, timestamp: serverTimestamp });
+        cooldown.commit();
+        el.chatInput.value = '';
+        autoResizeTextarea(el.chatInput);
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể gửi tin nhắn.'), 'error');
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 110)}px`;
+    }
+
+    function handleFeedClick(event) {
+      const actionButton = event.target.closest('[data-action]');
+      if (!actionButton) return;
+      const card = actionButton.closest('.post-card');
+      const postId = card && card.dataset.postId;
+      if (!postId) return;
+      const action = actionButton.dataset.action;
+      if (action === 'like') likePost(postId);
+      else if (action === 'comments') toggleComments(postId, card);
+      else if (action === 'report') openReport(postId);
+      else if (action === 'reply') {
+        const node = actionButton.closest('.comment-node');
+        const form = node && $('[data-reply-form]', node);
+        if (!form) return;
+        form.classList.toggle('open');
+        if (form.classList.contains('open')) {
+          const input = $('input', form);
+          if (input) input.focus();
+        }
+      }
+    }
+
+    async function handleFeedSubmit(event) {
+      const commentForm = event.target.closest('[data-comment-form]');
+      const replyForm = event.target.closest('[data-reply-form]');
+      if (!commentForm && !replyForm) return;
+      event.preventDefault();
+      const card = event.target.closest('.post-card');
+      const postId = card && card.dataset.postId;
+      const input = $('input', event.target);
+      const button = $('button[type="submit"]', event.target);
+      if (!postId || !input || !button || button.disabled) return;
+      const node = replyForm && replyForm.closest('.comment-node');
+      const parentPath = node ? node.dataset.commentPath || '' : '';
+      button.disabled = true;
+      await submitComment(postId, input, parentPath);
+      button.disabled = false;
+    }
+
+    function bindEvents() {
+      el.themeToggle.addEventListener('click', () => applyTheme(el.html.dataset.theme === 'dark' ? 'light' : 'dark'));
+      el.composerOpen.addEventListener('click', event => {
+        if (event.target.closest('button') && event.target !== el.composerOpen) event.preventDefault();
+        el.composerCard.classList.add('open');
+        el.composerOpen.setAttribute('aria-expanded', 'true');
+        el.postContent.focus();
+      });
+      el.composerOpen.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          el.composerOpen.click();
+        }
+      });
+      el.postContent.addEventListener('input', () => { el.postCharCount.textContent = String(el.postContent.value.length); });
+      el.postForm.addEventListener('submit', submitPost);
+      el.searchInput.addEventListener('input', () => {
+        state.search = el.searchInput.value;
+        scheduleFeedRender();
+      });
+      el.sortTabs.forEach(tab => tab.addEventListener('click', () => {
+        state.sort = tab.dataset.sort === 'popular' ? 'popular' : 'latest';
+        el.sortTabs.forEach(item => {
+          const active = item === tab;
+          item.classList.toggle('active', active);
+          item.setAttribute('aria-selected', String(active));
+        });
+        scheduleFeedRender();
+      }));
+      el.announcementClose.addEventListener('click', () => {
+        const id = el.announcementBox.dataset.id;
+        if (id) local.set('closed_announcement_id', id);
+        el.announcementBox.classList.remove('show');
+      });
+      el.postList.addEventListener('click', handleFeedClick);
+      el.postList.addEventListener('submit', handleFeedSubmit);
+      [el.chatFab, el.openChatCard].forEach(button => { if (button) button.addEventListener('click', openChat); });
+      [el.chatClose, el.chatBackdrop].forEach(button => { if (button) button.addEventListener('click', closeChat); });
+      el.chatForm.addEventListener('submit', submitChat);
+      el.chatInput.addEventListener('input', () => autoResizeTextarea(el.chatInput));
+      el.chatInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          if (typeof el.chatForm.requestSubmit === 'function') el.chatForm.requestSubmit();
+          else el.chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      });
+      [el.reportClose, el.reportCancel].forEach(button => button.addEventListener('click', closeReport));
+      el.reportSubmit.addEventListener('click', submitReport);
+      el.reportModal.addEventListener('click', event => { if (event.target === el.reportModal) closeReport(); });
+      document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        if (el.reportModal.classList.contains('show')) closeReport();
+        else if (state.chatOpen) closeChat();
+      });
+    }
+
+    function init() {
+      applyIdentityUI();
+      initTheme();
+      bindEvents();
+      initPresence();
+      initAnnouncement();
+      initPosts();
+      initChat();
+      console.log('✅ Diễn đàn Ẩn Danh đã sẵn sàng.');
+    }
+
+    init();
+  })();
+
+  </script>
 </body>
 </html>
