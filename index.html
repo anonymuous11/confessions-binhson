@@ -1009,12 +1009,21 @@
       }, error => showListenerError('announcements', error, 'Không thể tải thông báo.'));
     }
 
+    function isLegacyGhostComment(comment) {
+      if (!comment || typeof comment !== 'object') return false;
+      const hasName = Boolean(String(comment.name || comment.authorName || '').trim());
+      const hasText = Boolean(String(comment.text || '').trim());
+      const hasReplies = comment.replies && typeof comment.replies === 'object' && Object.keys(comment.replies).length > 0;
+      return !hasName && !hasText && hasReplies;
+    }
+
     function countComments(comments) {
       if (!comments || typeof comments !== 'object') return 0;
       let total = 0;
       Object.values(comments).forEach(comment => {
         if (!comment || typeof comment !== 'object') return;
-        total += 1 + countComments(comment.replies);
+        if (!isLegacyGhostComment(comment)) total += 1;
+        total += countComments(comment.replies);
       });
       return total;
     }
@@ -1315,6 +1324,14 @@
 
       entries.forEach(([commentId, comment]) => {
         const path = parentPath ? `${parentPath}/replies/${commentId}` : commentId;
+
+        // Dữ liệu cũ có thể chứa một nút giả chỉ có "replies" do đường dẫn trả lời bị ghi sai.
+        // Bỏ qua nút giả nhưng giữ nguyên đường dẫn thật để các câu trả lời tiếp theo vẫn ghi đúng chỗ.
+        if (isLegacyGhostComment(comment)) {
+          fragment.appendChild(buildCommentTree(postId, comment.replies, path, drafts));
+          return;
+        }
+
         const node = document.createElement('div');
         node.className = 'comment-node';
         node.dataset.commentPath = path;
