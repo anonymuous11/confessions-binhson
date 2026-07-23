@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#6d5dfc">
-  <meta name="description" content="Diễn đàn và phòng chat cộng đồng ẩn danh thời gian thực.">
-  <title>Ẩn Danh — Diễn đàn cộng đồng</title>
+  <meta name="description" content="Phòng tự học chung và diễn đàn học tập ẩn danh thời gian thực.">
+  <title>binhsonforum — Phòng tự học chung</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -414,52 +414,336 @@
     .topic-desc { margin-top: 2px; color: var(--muted); font-size: 10px; }
     .privacy-note { color: var(--muted); font-size: 10px; line-height: 1.55; }
     .privacy-note strong { color: var(--text); }
-    .open-chat-card {
-      width: 100%; border: 0; border-radius: 16px; padding: 14px; text-align: left; color: white; cursor: pointer;
-      background: linear-gradient(135deg, #6d5dfc, #4c99e9 70%, #20bacb);
+    .study-room {
+      overflow: hidden;
+      border-radius: 24px;
+      background: var(--surface-solid);
+      box-shadow: 0 20px 58px rgba(31, 35, 58, .12);
+    }
+    .study-room-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+      color: white;
+      background:
+        radial-gradient(circle at 92% 4%, rgba(255,255,255,.22), transparent 13rem),
+        radial-gradient(circle at 10% 115%, rgba(47,196,212,.32), transparent 15rem),
+        linear-gradient(128deg, #5848e8 0%, #735fff 58%, #258fac 135%);
+    }
+    .study-room-hero::after {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      right: -82px;
+      top: -112px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 50%;
+    }
+    .study-room-heading {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .study-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+      color: rgba(255,255,255,.72);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .study-room-title { margin: 0; font-size: 22px; line-height: 1.18; letter-spacing: -.035em; }
+    .study-room-subtitle { margin: 5px 0 0; max-width: 420px; color: rgba(255,255,255,.74); font-size: 11px; }
+    .study-live-pill {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,.12);
+      font-size: 10px;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+    .study-live-pill .live-dot { background: #6ff1b5; box-shadow: 0 0 0 5px rgba(111,241,181,.16); }
+    .study-core-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(220px, .86fr) minmax(0, 1.14fr);
+      gap: 14px;
+    }
+    .study-timer-card, .study-join-card {
+      border: 1px solid rgba(255,255,255,.17);
+      border-radius: 19px;
+      background: rgba(255,255,255,.11);
+      backdrop-filter: blur(13px);
+    }
+    .study-timer-card {
+      min-height: 248px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .timer-ring {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      place-items: center;
+    }
+    .timer-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .timer-ring-track, .timer-ring-progress { fill: none; stroke-width: 7; }
+    .timer-ring-track { stroke: rgba(255,255,255,.16); }
+    .timer-ring-progress {
+      stroke: white;
+      stroke-linecap: round;
+      stroke-dasharray: 339.292;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset .8s linear;
+      filter: drop-shadow(0 0 7px rgba(255,255,255,.28));
+    }
+    .timer-copy { position: relative; z-index: 1; }
+    .study-timer { font-size: 34px; line-height: 1; font-weight: 900; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+    .study-phase { margin-top: 7px; color: rgba(255,255,255,.76); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .1em; }
+    .study-timer-caption { margin-top: 8px; color: rgba(255,255,255,.72); font-size: 10px; }
+    .sound-toggle {
+      margin-top: 11px;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      background: rgba(255,255,255,.1);
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .study-join-card { padding: 17px; }
+    .study-form-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+    .study-form-title { font-size: 13px; font-weight: 850; }
+    .study-my-status {
+      display: none;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: #d9ffec;
+      background: rgba(70,220,143,.18);
+      font-size: 8px;
+      font-weight: 850;
+    }
+    .study-my-status.show { display: inline-flex; }
+    .study-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .study-field { display: grid; gap: 5px; }
+    .study-field-full { margin-top: 9px; }
+    .study-field label { color: rgba(255,255,255,.7); font-size: 9px; font-weight: 800; }
+    .study-field select, .study-field input {
+      width: 100%;
+      height: 41px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      padding: 0 11px;
+      color: white;
+      background: rgba(20,20,50,.2);
+      outline: none;
+      font-size: 11px;
+    }
+    .study-field select option { color: #171824; background: #fff; }
+    .study-field input::placeholder { color: rgba(255,255,255,.48); }
+    .study-field select:focus, .study-field input:focus { border-color: rgba(255,255,255,.55); box-shadow: 0 0 0 3px rgba(255,255,255,.1); }
+    .study-form-actions { margin-top: 12px; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    .study-join-btn, .study-leave-btn, .study-complete-btn {
+      min-height: 40px;
+      border: 0;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .18s ease, opacity .18s ease, background .18s ease;
+    }
+    .study-join-btn { color: #5144da; background: white; box-shadow: 0 10px 22px rgba(21,19,70,.16); }
+    .study-join-btn:hover, .study-complete-btn:hover { transform: translateY(-1px); }
+    .study-leave-btn { display: none; width: 42px; padding: 0; color: white; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1); }
+    .study-leave-btn.show { display: inline-flex; }
+    .study-complete-btn { display: none; width: 100%; margin-top: 8px; color: white; border: 1px solid rgba(255,255,255,.2); background: rgba(43,218,139,.2); }
+    .study-complete-btn.show { display: inline-flex; }
+    .study-complete-btn.done { color: #d9ffec; background: rgba(43,218,139,.3); }
+    .study-room-body { padding: 17px 18px 18px; }
+    .study-members-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .study-members-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 850; }
+    .study-members-note { color: var(--subtle); font-size: 9px; }
+    .study-members { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; max-height: 300px; overflow-y: auto; padding-right: 2px; }
+    .study-member {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--surface-2);
+    }
+    .study-member.own { border-color: rgba(109,93,252,.28); background: var(--primary-soft); }
+    .study-member-avatar { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: white; font-size: 9px; font-weight: 850; flex: 0 0 auto; }
+    .study-member-main { min-width: 0; flex: 1; }
+    .study-member-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 850; }
+    .study-member-detail { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 9px; }
+    .study-member-meta { margin-top: 3px; display: flex; align-items: center; gap: 5px; color: var(--subtle); font-size: 8px; }
+    .study-member-state { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 4px var(--success-soft); }
+    .study-member-state.done { background: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+    .study-empty { grid-column: 1 / -1; padding: 24px 14px; border: 1px dashed var(--line); border-radius: 15px; text-align: center; color: var(--muted); background: var(--surface-2); font-size: 10px; }
+    .study-live-pill { color: white; cursor: pointer; transition: transform .18s ease, background .18s ease, border-color .18s ease; }
+    .study-live-pill:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.38); background: rgba(255,255,255,.18); }
+    .study-live-pill:active { transform: translateY(0); }
+
+    .study-chat {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .study-chat-head {
+      padding: 14px 15px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--primary-soft), transparent 72%);
+    }
+    .study-chat-title { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 850; }
+    .study-chat-note { margin-top: 4px; max-width: 480px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .study-chat-slow-badge {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-size: 8px;
+      font-weight: 900;
+    }
+    .study-chat-messages {
+      height: 330px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      background: color-mix(in srgb, var(--surface-2) 58%, transparent);
+      scroll-behavior: smooth;
+    }
+    .study-chat-empty {
+      margin: auto;
+      max-width: 310px;
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+      background: var(--surface-solid);
+      text-align: center;
+      font-size: 10px;
+      line-height: 1.55;
+    }
+    .study-chat-message { display: flex; align-items: flex-start; gap: 9px; max-width: 88%; }
+    .study-chat-message.own { align-self: flex-end; flex-direction: row-reverse; }
+    .study-chat-avatar { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 11px; display: grid; place-items: center; color: white; font-size: 8px; font-weight: 900; }
+    .study-chat-main { min-width: 0; }
+    .study-chat-author { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 0 0 4px 3px; }
+    .study-chat-message.own .study-chat-author { justify-content: flex-end; margin: 0 3px 4px 0; }
+    .study-chat-name { font-size: 9px; font-weight: 850; }
+    .study-chat-grade { padding: 2px 6px; border-radius: 999px; color: var(--primary); background: var(--primary-soft); font-size: 7px; font-weight: 900; }
+    .study-chat-goal { max-width: 420px; margin: 0 0 4px 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--subtle); font-size: 8px; }
+    .study-chat-message.own .study-chat-goal { margin: 0 3px 4px 0; text-align: right; }
+    .study-chat-bubble { padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px 14px 14px 14px; background: var(--surface-solid); color: var(--text); font-size: 11px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: 0 5px 16px rgba(31,35,58,.04); }
+    .study-chat-message.own .study-chat-bubble { border-color: transparent; border-radius: 14px 5px 14px 14px; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); }
+    .study-chat-time { margin-top: 3px; color: var(--subtle); font-size: 7px; text-align: right; }
+    .study-chat-form { padding: 11px 12px 10px; border-top: 1px solid var(--line); background: var(--surface-solid); }
+    .study-chat-compose { display: flex; align-items: flex-end; gap: 8px; }
+    .study-chat-compose textarea {
+      flex: 1;
+      min-width: 0;
+      min-height: 42px;
+      max-height: 115px;
+      resize: none;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 10px 11px;
+      color: var(--text);
+      background: var(--surface-2);
+      outline: none;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .study-chat-compose textarea:focus { border-color: rgba(109,93,252,.45); box-shadow: 0 0 0 3px rgba(109,93,252,.08); }
+    .study-chat-compose textarea:disabled { cursor: not-allowed; opacity: .7; }
+    .study-chat-send { width: 42px; height: 42px; flex: 0 0 auto; border: 0; border-radius: 13px; display: grid; place-items: center; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); cursor: pointer; box-shadow: 0 9px 20px rgba(109,93,252,.2); }
+    .study-chat-send:disabled { cursor: not-allowed; opacity: .45; box-shadow: none; }
+    .study-chat-footer { margin-top: 7px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--subtle); font-size: 8px; }
+    .study-members-modal { width: min(680px, 100%); }
+    .study-members-modal-body { max-height: min(68vh, 520px); overflow-y: auto; }
+    .study-members-modal .study-members { max-height: none; }
+    .study-side-card {
+      width: 100%;
+      border: 0;
+      border-radius: 17px;
+      padding: 15px;
+      text-align: left;
+      color: white;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6d5dfc, #4d88df 72%, #20bacb);
       box-shadow: 0 14px 30px rgba(84,84,224,.2);
     }
-    .open-chat-card-head { display: flex; align-items: center; justify-content: space-between; }
-    .open-chat-card-title { font-size: 13px; font-weight: 850; }
-    .open-chat-card p { margin: 7px 0 0; color: rgba(255,255,255,.74); font-size: 10px; }
+    .study-side-card-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+    .study-side-card-title { font-size: 13px; font-weight: 850; }
+    .study-side-card p { margin: 6px 0 11px; color: rgba(255,255,255,.72); font-size: 10px; }
+    .study-side-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .study-side-metric { padding: 8px; border: 1px solid rgba(255,255,255,.14); border-radius: 11px; background: rgba(255,255,255,.1); }
+    .study-side-value { font-size: 14px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .study-side-label { margin-top: 1px; color: rgba(255,255,255,.68); font-size: 8px; }
+    .study-tip-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .study-tip-list li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; color: var(--muted); font-size: 10px; }
+    .study-tip-icon { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; color: var(--primary); background: var(--primary-soft); font-size: 10px; font-weight: 900; }
 
-    .chat-fab {
-      position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 150;
-      width: 58px; height: 58px; border: 0; border-radius: 19px; display: grid; place-items: center;
-      color: white; background: linear-gradient(135deg, var(--primary), #397fdf 74%, var(--cyan));
-      box-shadow: 0 17px 38px rgba(70,72,205,.32); cursor: pointer; transition: transform .2s ease;
+    @media (max-width: 800px) {
+      .study-room-hero { padding: 18px; }
+      .study-core-grid { grid-template-columns: 1fr; }
+      .study-timer-card { min-height: 220px; }
+      .study-members { grid-template-columns: 1fr; }
     }
-    .chat-fab:hover { transform: translateY(-2px) scale(1.02); }
-    .unread-badge { display: none; position: absolute; top: -5px; right: -5px; min-width: 21px; height: 21px; padding: 0 5px; border: 3px solid var(--bg); border-radius: 999px; place-items: center; color: white; background: var(--danger); font-size: 9px; font-weight: 900; }
-    .unread-badge.show { display: grid; }
-
-    .chat-drawer-backdrop { position: fixed; inset: 0; z-index: 199; display: none; background: rgba(8,9,15,.4); backdrop-filter: blur(3px); }
-    .chat-drawer-backdrop.show { display: block; }
-    .chat-drawer {
-      position: fixed; z-index: 200; top: 12px; right: 12px; bottom: 12px; width: min(410px, calc(100vw - 24px));
-      display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 25px;
-      background: var(--surface-solid); box-shadow: var(--shadow-lg); transform: translateX(calc(100% + 30px)); transition: transform .25s cubic-bezier(.2,.8,.2,1);
+    @media (max-width: 520px) {
+      .study-room-heading { align-items: stretch; flex-direction: column; }
+      .study-live-pill { align-self: flex-start; }
+      .study-room-title { font-size: 20px; }
+      .study-form-grid { grid-template-columns: 1fr; }
+      .study-form-actions { grid-template-columns: 1fr auto; }
+      .study-room-body { padding: 14px; }
+      .study-chat-head { flex-direction: column; }
+      .study-chat-slow-badge { align-self: flex-start; }
+      .study-chat-messages { height: 300px; padding: 11px; }
+      .study-chat-message { max-width: 96%; }
     }
-    .chat-drawer.show { transform: translateX(0); }
-    .chat-head { padding: 16px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, var(--primary-soft), transparent); }
-    .chat-head-icon { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; color: white; background: linear-gradient(135deg, var(--primary), var(--cyan)); }
-    .chat-head-copy { min-width: 0; flex: 1; }
-    .chat-title { font-size: 13px; font-weight: 850; }
-    .chat-status { color: var(--muted); font-size: 10px; display: flex; align-items: center; gap: 6px; }
-    .chat-close { width: 38px; height: 38px; border: 0; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); cursor: pointer; }
-    .chat-messages { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(180deg, var(--surface-2), var(--surface-solid) 20%); }
-    .chat-day { align-self: center; padding: 5px 9px; border-radius: 999px; color: var(--subtle); background: var(--surface-2); font-size: 9px; font-weight: 750; }
-    .chat-message { max-width: 82%; }
-    .chat-message.own { align-self: flex-end; }
-    .chat-message.other { align-self: flex-start; }
-    .chat-name { margin: 0 0 3px 5px; color: var(--subtle); font-size: 9px; font-weight: 800; }
-    .chat-bubble { padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px 15px 15px 15px; background: var(--surface-2); font-size: 12px; line-height: 1.48; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .chat-message.own .chat-bubble { border-color: transparent; border-radius: 15px 5px 15px 15px; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); }
-    .chat-time { margin-top: 3px; color: var(--subtle); font-size: 8px; text-align: right; }
-    .chat-input-area { padding: 12px; display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid var(--line); background: var(--surface-solid); }
-    .chat-input-area textarea { flex: 1; min-height: 42px; max-height: 110px; resize: none; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--surface-2); color: var(--text); outline: none; font-size: 12px; line-height: 1.45; }
-    .chat-input-area textarea:focus { border-color: rgba(109,93,252,.45); }
-    .chat-send { width: 42px; height: 42px; border: 0; border-radius: 13px; display: grid; place-items: center; color: white; background: var(--primary); cursor: pointer; }
 
     .modal-backdrop { position: fixed; inset: 0; z-index: 300; display: none; place-items: center; padding: 18px; background: rgba(8,9,15,.48); backdrop-filter: blur(5px); }
     .modal-backdrop.show { display: grid; }
@@ -495,12 +779,12 @@
       .identity-pill { min-height: 42px; max-width: 170px; padding: 4px 9px 4px 4px; border-radius: 14px; }
       .identity-avatar { width: 32px; height: 32px; border-radius: 10px; }
       .icon-btn { width: 42px; height: 42px; border-radius: 14px; }
-      .page-shell { padding: 16px 12px 90px; grid-template-columns: 1fr; gap: 14px; }
+      .page-shell { padding: 16px 12px 48px; grid-template-columns: 1fr; gap: 14px; }
       .left-sidebar { display: none; }
       .hero { min-height: 160px; padding: 21px; }
       .feed-toolbar { align-items: stretch; flex-direction: column; }
       .sort-tabs { align-self: flex-start; }
-      .chat-fab { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); }
+
     }
     @media (max-width: 520px) {
       .header-inner { padding: 0 10px; gap: 6px; }
@@ -517,8 +801,7 @@
       .action-btn .icon { width: 17px; height: 17px; }
       .reply-children { margin-left: 20px; }
       .reply-form { margin-left: 20px; }
-      .chat-drawer { inset: 0; width: 100%; border-radius: 0; border: 0; }
-      .chat-drawer-backdrop { display: none !important; }
+
       .toast-stack { top: 74px; right: 12px; width: calc(100vw - 24px); }
     }
     @media (max-width: 390px) {
@@ -549,15 +832,21 @@
     <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15 9.5a4 4 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/></symbol>
+    <symbol id="i-volume-off" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 5M21 9l-5 5"/></symbol>
+    <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></symbol>
   </svg>
 
   <header class="app-header">
     <div class="header-inner">
       <a class="brand" href="./" aria-label="Về trang chủ" title="Về trang chủ">
-        <div class="brand-mark" aria-hidden="true">A</div>
+        <div class="brand-mark" aria-hidden="true">B</div>
         <div class="brand-copy">
           <div class="brand-title">binhsonforum</div>
-          <div class="brand-subtitle">Không phán xét · Chỉ lắng nghe</div>
+          <div class="brand-subtitle">Học cùng nhau · Tiến bộ mỗi ngày</div>
         </div>
       </a>
 
@@ -581,10 +870,10 @@
       <section class="panel">
         <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-shield"></use></svg>Nội quy cộng đồng</h2>
         <ol class="rule-list">
-          <li><span class="rule-index">01</span><span>Tôn trọng mọi người, không công kích hoặc bắt nạt.</span></li>
-          <li><span class="rule-index">02</span><span>Không đăng thông tin cá nhân, nội dung nhạy cảm hoặc trái pháp luật.</span></li>
-          <li><span class="rule-index">03</span><span>Không spam, quảng cáo hoặc cố tình phá hoại cuộc trò chuyện.</span></li>
-          <li><span class="rule-index">04</span><span>Mọi bài viết hiển thị bằng danh tính ẩn danh.</span></li>
+          <li><span class="rule-index">01</span><span>Vào phòng để học, đặt mục tiêu rõ ràng và tôn trọng thời gian của nhau.</span></li>
+          <li><span class="rule-index">02</span><span>Không spam, quảng cáo hoặc nhập mục tiêu có nội dung không phù hợp.</span></li>
+          <li><span class="rule-index">03</span><span>Không chia sẻ họ tên, địa chỉ, số điện thoại hoặc thông tin nhạy cảm.</span></li>
+          <li><span class="rule-index">04</span><span>Danh tính ẩn danh được giữ cố định trên thiết bị để tạo sự thân quen.</span></li>
         </ol>
       </section>
 
@@ -592,7 +881,7 @@
         <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-users"></use></svg>Cộng đồng lúc này</h2>
         <div class="community-stat"><span class="stat-label">Đang trực tuyến</span><span class="stat-value"><i class="live-dot"></i><b id="onlineCountSide">0</b></span></div>
         <div class="community-stat"><span class="stat-label">Bài đang hiển thị</span><span class="stat-value" id="postCountSide">0</span></div>
-        <div class="community-stat"><span class="stat-label">Chế độ</span><span class="stat-value">Thời gian thực</span></div>
+        <div class="community-stat"><span class="stat-label">Trong phòng học</span><span class="stat-value" id="studyCountSide">0</span></div>
       </section>
     </aside>
 
@@ -608,21 +897,137 @@
         <button class="announcement-close" id="announcementClose" type="button" aria-label="Đóng thông báo"><svg class="icon icon-sm"><use href="#i-x"></use></svg></button>
       </section>
 
+      <section class="study-room card" id="studyRoom" aria-labelledby="studyRoomTitle">
+        <div class="study-room-hero">
+          <div class="study-room-heading">
+            <div>
+              <div class="study-eyebrow"><svg class="icon icon-sm"><use href="#i-book"></use></svg>Phòng tự học thời gian thực</div>
+              <h1 class="study-room-title" id="studyRoomTitle">Học cùng nhau, tập trung tốt hơn.</h1>
+              <p class="study-room-subtitle">Mọi người dùng chung nhịp 25 phút tập trung và 5 phút nghỉ. Phần trò chuyện giới hạn mỗi người một tin nhắn trong 90 giây để tránh xao nhãng.</p>
+            </div>
+            <button class="study-live-pill" id="studyMembersToggle" type="button" aria-expanded="false" aria-controls="studyMembersModal" title="Xem những người đang học">
+              <i class="live-dot"></i><strong id="studyOnlineCount">0</strong> người đang học
+            </button>
+          </div>
+
+          <div class="study-core-grid">
+            <div class="study-timer-card">
+              <div class="timer-ring" aria-label="Đồng hồ phiên học">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="timer-ring-track" cx="60" cy="60" r="54"></circle>
+                  <circle class="timer-ring-progress" id="studyTimerProgress" cx="60" cy="60" r="54"></circle>
+                </svg>
+                <div class="timer-copy">
+                  <div class="study-timer" id="studyTimer">25:00</div>
+                  <div class="study-phase" id="studyPhase">Tập trung</div>
+                </div>
+              </div>
+              <div class="study-timer-caption" id="studyTimerCaption">Đang đồng bộ thời gian…</div>
+              <button class="sound-toggle" id="studySoundToggle" type="button" aria-pressed="false">
+                <svg class="icon icon-sm"><use href="#i-volume-off"></use></svg><span>Âm báo: Tắt</span>
+              </button>
+            </div>
+
+            <form class="study-join-card" id="studyJoinForm">
+              <div class="study-form-head">
+                <div class="study-form-title">Thiết lập phiên học của bạn</div>
+                <span class="study-my-status" id="studyMyStatus">Bạn đang trong phòng</span>
+              </div>
+              <div class="study-form-grid">
+                <div class="study-field">
+                  <label for="studySubject">Môn đang học</label>
+                  <select id="studySubject" required>
+                    <option value="Toán">Toán</option>
+                    <option value="Ngữ văn">Ngữ văn</option>
+                    <option value="Tiếng Anh">Tiếng Anh</option>
+                    <option value="Vật lý">Vật lý</option>
+                    <option value="Hóa học">Hóa học</option>
+                    <option value="Sinh học">Sinh học</option>
+                    <option value="Lịch sử">Lịch sử</option>
+                    <option value="Địa lý">Địa lý</option>
+                    <option value="Tin học">Tin học</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+                <div class="study-field">
+                  <label for="studyGrade">Khối/lớp</label>
+                  <select id="studyGrade" required>
+                    <optgroup label="Trung học cơ sở">
+                      <option value="Lớp 6">Lớp 6</option>
+                      <option value="Lớp 7">Lớp 7</option>
+                      <option value="Lớp 8">Lớp 8</option>
+                      <option value="Lớp 9" selected>Lớp 9</option>
+                    </optgroup>
+                    <optgroup label="Trung học phổ thông">
+                      <option value="Lớp 10">Lớp 10</option>
+                      <option value="Lớp 11">Lớp 11</option>
+                      <option value="Lớp 12">Lớp 12</option>
+                    </optgroup>
+                    <optgroup label="Ôn thi và bậc học khác">
+                      <option value="Ôn ĐGNL">Ôn ĐGNL</option>
+                      <option value="Ôn ĐGTD">Ôn ĐGTD</option>
+                      <option value="Đại học">Đại học</option>
+                      <option value="Khác">Khác</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+              <div class="study-field study-field-full">
+                <label for="studyGoal">Mục tiêu của phiên này</label>
+                <input id="studyGoal" type="text" maxlength="100" required placeholder="Ví dụ: Làm xong 15 câu phương trình">
+              </div>
+              <div class="study-form-actions">
+                <button class="study-join-btn" id="studyJoinButton" type="submit"><svg class="icon icon-sm"><use href="#i-users"></use></svg><span>Tham gia học cùng</span></button>
+                <button class="study-leave-btn" id="studyLeaveButton" type="button" aria-label="Rời phòng"><svg class="icon icon-sm"><use href="#i-log-out"></use></svg></button>
+              </div>
+              <button class="study-complete-btn" id="studyCompleteButton" type="button"><svg class="icon icon-sm"><use href="#i-check"></use></svg><span>Đánh dấu đã hoàn thành mục tiêu</span></button>
+            </form>
+          </div>
+        </div>
+
+        <div class="study-room-body">
+          <section class="study-chat" aria-labelledby="studyChatTitle">
+            <div class="study-chat-head">
+              <div>
+                <div class="study-chat-title" id="studyChatTitle"><svg class="icon icon-sm"><use href="#i-message"></use></svg>Góc trao đổi trong phòng</div>
+                <div class="study-chat-note">Tin nhắn hiển thị danh tính ẩn danh, khối/lớp và mục tiêu học tập. Mỗi người gửi tối đa 1 tin/90 giây.</div>
+              </div>
+              <span class="study-chat-slow-badge">Chế độ chậm 90s</span>
+            </div>
+            <div class="study-chat-messages" id="studyChatMessages" aria-live="polite">
+              <div class="study-chat-empty">Chưa có tin nhắn. Hãy tham gia phòng và gửi lời chào đầu tiên.</div>
+            </div>
+            <form class="study-chat-form" id="studyChatForm">
+              <div class="study-chat-compose">
+                <textarea id="studyChatInput" rows="1" maxlength="500" placeholder="Tham gia phòng để trò chuyện…" aria-label="Tin nhắn trong phòng học"></textarea>
+                <button class="study-chat-send" id="studyChatSubmit" type="submit" aria-label="Gửi tin nhắn">
+                  <svg class="icon"><use href="#i-send"></use></svg>
+                </button>
+              </div>
+              <div class="study-chat-footer">
+                <span id="studyChatCooldown">Tham gia phòng để gửi tin nhắn.</span>
+                <span><span id="studyChatCharCount">0</span>/500</span>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+
       <section class="card composer" id="composerCard">
         <div class="composer-closed" id="composerOpen" role="button" tabindex="0" aria-expanded="false">
           <div class="avatar" id="composerAvatar">AD</div>
-          <div class="composer-placeholder">Bạn đang nghĩ gì? Hãy chia sẻ ẩn danh…</div>
+          <div class="composer-placeholder">Hỏi bài hoặc chia sẻ một mẹo học tập…</div>
           <button class="composer-trigger" type="button" tabindex="-1" aria-label="Mở ô đăng bài"><svg class="icon"><use href="#i-spark"></use></svg></button>
         </div>
         <form class="composer-form" id="postForm">
           <div class="composer-divider"></div>
-          <textarea id="postContent" maxlength="1500" placeholder="Chia sẻ suy nghĩ của bạn…" aria-label="Nội dung bài viết"></textarea>
+          <textarea id="postContent" maxlength="1500" placeholder="Viết câu hỏi, bài chưa hiểu hoặc kinh nghiệm học tập…" aria-label="Nội dung bài viết"></textarea>
           <div class="composer-footer">
             <div class="composer-meta">
               <label class="check-row"><input type="checkbox" id="agreeRule"> Tôi đồng ý với nội quy cộng đồng</label>
               <span class="char-count"><span id="postCharCount">0</span>/1500 ký tự</span>
             </div>
-            <button class="primary-btn" id="postSubmit" type="submit"><svg class="icon icon-sm"><use href="#i-send"></use></svg>Đăng ẩn danh</button>
+            <button class="primary-btn" id="postSubmit" type="submit"><svg class="icon icon-sm"><use href="#i-send"></use></svg>Đăng bài</button>
           </div>
         </form>
       </section>
@@ -630,7 +1035,7 @@
       <div class="feed-toolbar">
         <label class="search-wrap">
           <svg class="icon icon-sm"><use href="#i-search"></use></svg>
-          <input class="search-input" id="searchInput" type="search" placeholder="Tìm trong các bài viết…" autocomplete="off">
+          <input class="search-input" id="searchInput" type="search" placeholder="Tìm câu hỏi, mẹo học tập…" autocomplete="off">
         </label>
         <div class="sort-tabs" role="tablist" aria-label="Sắp xếp bài viết">
           <button class="sort-tab active" type="button" role="tab" aria-selected="true" data-sort="latest">Mới nhất</button>
@@ -644,52 +1049,51 @@
       </section>
     </section>
 
-    <aside class="sidebar right-sidebar" aria-label="Khám phá">
-      <button class="open-chat-card" id="openChatCard" type="button">
-        <div class="open-chat-card-head">
-          <span class="open-chat-card-title">Phòng chat cộng đồng</span>
-          <svg class="icon"><use href="#i-message"></use></svg>
+    <aside class="sidebar right-sidebar" aria-label="Thông tin phòng học">
+      <button class="study-side-card" id="studyRoomShortcut" type="button">
+        <div class="study-side-card-head">
+          <span class="study-side-card-title">Vào phòng tự học</span>
+          <svg class="icon"><use href="#i-book"></use></svg>
         </div>
-        <p>Trò chuyện tức thì cùng những người đang online.</p>
+        <p>Cùng học theo nhịp Pomodoro 25/5 và theo dõi mục tiêu của mọi người.</p>
+        <div class="study-side-metrics">
+          <div class="study-side-metric"><div class="study-side-value" id="studyTimerSide">25:00</div><div class="study-side-label" id="studyPhaseSide">Tập trung</div></div>
+          <div class="study-side-metric"><div class="study-side-value" id="studyCountSideCard">0</div><div class="study-side-label">đang trong phòng</div></div>
+        </div>
       </button>
 
       <section class="panel">
-        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>Gợi ý chủ đề</h2>
-        <div class="topic-list">
-          <div class="topic-item"><div class="topic-name">Tâm sự hôm nay</div><div class="topic-desc">Một điều bạn đang giữ trong lòng.</div></div>
-          <div class="topic-item"><div class="topic-name">Xin lời khuyên</div><div class="topic-desc">Hỏi cộng đồng về lựa chọn khó khăn.</div></div>
-          <div class="topic-item"><div class="topic-name">Chuyện vui nhỏ</div><div class="topic-desc">Lan tỏa một khoảnh khắc tích cực.</div></div>
-        </div>
+        <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-target"></use></svg>Mẹo tập trung</h2>
+        <ul class="study-tip-list">
+          <li><span class="study-tip-icon">1</span><span>Đặt một mục tiêu đủ nhỏ để hoàn thành trong 25 phút.</span></li>
+          <li><span class="study-tip-icon">2</span><span>Tắt thông báo và chỉ mở tài liệu cần thiết cho phiên học.</span></li>
+          <li><span class="study-tip-icon">3</span><span>Đến giờ nghỉ, đứng dậy uống nước và tránh lướt mạng xã hội.</span></li>
+        </ul>
       </section>
 
       <section class="panel">
         <h2 class="panel-title"><svg class="icon icon-sm"><use href="#i-info"></use></svg>Quyền riêng tư</h2>
-        <p class="privacy-note"><strong>Ẩn danh với cộng đồng</strong> không có nghĩa là vô danh tuyệt đối với hệ thống. Không chia sẻ họ tên, địa chỉ, số điện thoại hoặc dữ liệu nhạy cảm.</p>
+        <p class="privacy-note"><strong>Phòng học chỉ hiển thị danh tính ẩn danh, môn, lớp và mục tiêu.</strong> Không nhập họ tên, trường học, địa chỉ, số điện thoại hoặc dữ liệu nhạy cảm.</p>
       </section>
     </aside>
   </main>
 
-  <button class="chat-fab" id="chatFab" type="button" aria-label="Mở phòng chat">
-    <svg class="icon icon-lg"><use href="#i-message"></use></svg>
-    <span class="unread-badge" id="unreadBadge">0</span>
-  </button>
-
-  <div class="chat-drawer-backdrop" id="chatBackdrop"></div>
-  <aside class="chat-drawer" id="chatDrawer" aria-label="Phòng chat cộng đồng" aria-hidden="true">
-    <header class="chat-head">
-      <div class="chat-head-icon"><svg class="icon"><use href="#i-message"></use></svg></div>
-      <div class="chat-head-copy">
-        <div class="chat-title">Chat cộng đồng</div>
-        <div class="chat-status"><i class="live-dot"></i><span id="onlineCountChat">0</span> người đang online · Ẩn danh</div>
+  <div class="modal-backdrop" id="studyMembersModal" role="dialog" aria-modal="true" aria-labelledby="studyMembersTitle">
+    <div class="modal study-members-modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="studyMembersTitle">Mọi người đang học</div>
+          <div class="study-members-note"><span id="studyCompletedCount">0</span> đã hoàn thành · <span id="studySubjectCount">0</span> môn đang học</div>
+        </div>
+        <button class="modal-close" id="studyMembersClose" type="button" aria-label="Đóng danh sách người học"><svg class="icon"><use href="#i-x"></use></svg></button>
       </div>
-      <button class="chat-close" id="chatClose" type="button" aria-label="Đóng phòng chat"><svg class="icon"><use href="#i-x"></use></svg></button>
-    </header>
-    <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
-    <form class="chat-input-area" id="chatForm">
-      <textarea id="chatInput" rows="1" maxlength="500" placeholder="Nhắn tin ẩn danh…" aria-label="Tin nhắn"></textarea>
-      <button class="chat-send" type="submit" aria-label="Gửi tin nhắn"><svg class="icon"><use href="#i-send"></use></svg></button>
-    </form>
-  </aside>
+      <div class="modal-body study-members-modal-body">
+        <div class="study-members" id="studyMembers" aria-live="polite">
+          <div class="study-empty">Chưa có ai trong phòng. Hãy là người bắt đầu phiên học đầu tiên.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
     <div class="modal">
@@ -739,17 +1143,40 @@
       announcementContent: $('#announcementContent'),
       announcementTime: $('#announcementTime'),
       announcementClose: $('#announcementClose'),
-      onlineCounts: [$('#onlineCountSide'), $('#onlineCountHero'), $('#onlineCountChat')],
+      onlineCounts: [$('#onlineCountSide')],
       postCountSide: $('#postCountSide'),
-      chatFab: $('#chatFab'),
-      openChatCard: $('#openChatCard'),
-      chatDrawer: $('#chatDrawer'),
-      chatBackdrop: $('#chatBackdrop'),
-      chatClose: $('#chatClose'),
-      chatMessages: $('#chatMessages'),
-      chatForm: $('#chatForm'),
-      chatInput: $('#chatInput'),
-      unreadBadge: $('#unreadBadge'),
+      studyRoom: $('#studyRoom'),
+      studyMembersToggle: $('#studyMembersToggle'),
+      studyMembersModal: $('#studyMembersModal'),
+      studyMembersClose: $('#studyMembersClose'),
+      studyJoinForm: $('#studyJoinForm'),
+      studySubject: $('#studySubject'),
+      studyGrade: $('#studyGrade'),
+      studyGoal: $('#studyGoal'),
+      studyJoinButton: $('#studyJoinButton'),
+      studyLeaveButton: $('#studyLeaveButton'),
+      studyCompleteButton: $('#studyCompleteButton'),
+      studyMyStatus: $('#studyMyStatus'),
+      studyMembers: $('#studyMembers'),
+      studyOnlineCount: $('#studyOnlineCount'),
+      studyCountSide: $('#studyCountSide'),
+      studyCountSideCard: $('#studyCountSideCard'),
+      studyCompletedCount: $('#studyCompletedCount'),
+      studySubjectCount: $('#studySubjectCount'),
+      studyTimer: $('#studyTimer'),
+      studyTimerSide: $('#studyTimerSide'),
+      studyPhase: $('#studyPhase'),
+      studyPhaseSide: $('#studyPhaseSide'),
+      studyTimerCaption: $('#studyTimerCaption'),
+      studyTimerProgress: $('#studyTimerProgress'),
+      studySoundToggle: $('#studySoundToggle'),
+      studyRoomShortcut: $('#studyRoomShortcut'),
+      studyChatMessages: $('#studyChatMessages'),
+      studyChatForm: $('#studyChatForm'),
+      studyChatInput: $('#studyChatInput'),
+      studyChatSubmit: $('#studyChatSubmit'),
+      studyChatCooldown: $('#studyChatCooldown'),
+      studyChatCharCount: $('#studyChatCharCount'),
       reportModal: $('#reportModal'),
       reportReason: $('#reportReason'),
       reportClose: $('#reportClose'),
@@ -799,10 +1226,12 @@
       announcements: db.ref('announcements'),
       presence: db.ref('presence'),
       connected: db.ref('.info/connected'),
-      chat: db.ref('community_chat')
+      serverTimeOffset: db.ref('.info/serverTimeOffset'),
+      studyMembers: db.ref('study_rooms/general/members'),
+      studyChat: db.ref('study_rooms/general/chat')
     };
     const postsQuery = refs.posts.orderByChild('timestamp').limitToLast(20000);
-    const chatQuery = refs.chat.orderByChild('timestamp').limitToLast(100);
+    const studyChatQuery = refs.studyChat.orderByChild('timestamp').limitToLast(100);
 
     const state = {
       posts: new Map(),
@@ -813,19 +1242,25 @@
       postsLoaded: false,
       feedRenderQueued: false,
       reportPostId: null,
-      chatOpen: false,
-      unread: 0,
-      chatInitialized: false,
-      chatKeys: new Set(),
       likePending: new Set(),
       connectionSeen: false,
-      listenerErrorShown: new Set()
+      listenerErrorShown: new Set(),
+      studyMembers: new Map(),
+      studyJoined: false,
+      studyCompleted: false,
+      studyMemberRef: null,
+      studyPhase: null,
+      serverOffset: 0,
+      soundEnabled: false,
+      lastMemberRender: 0,
+      studyChatMessages: [],
+      studyChatCooldownTimer: null
     };
 
     const limits = {
       post: { max: 1500, cooldown: 15000 },
       comment: { max: 500, cooldown: 4000 },
-      chat: { max: 500, cooldown: 1500 },
+      studyChat: { max: 500, cooldown: 90000 },
       report: { max: 500, cooldown: 10000 }
     };
 
@@ -1476,7 +1911,7 @@
     function closeReport() {
       state.reportPostId = null;
       el.reportModal.classList.remove('show');
-      if (!state.chatOpen) el.body.classList.remove('no-scroll');
+      el.body.classList.remove('no-scroll');
     }
 
     async function submitReport() {
@@ -1505,109 +1940,442 @@
       }
     }
 
-    function openChat() {
-      state.chatOpen = true;
-      state.unread = 0;
-      updateUnread();
-      el.chatDrawer.classList.add('show');
-      el.chatBackdrop.classList.add('show');
-      el.chatDrawer.setAttribute('aria-hidden', 'false');
-      el.body.classList.add('no-scroll');
-      window.setTimeout(() => {
-        scrollChatBottom();
-        el.chatInput.focus();
-      }, 180);
+    const studyConfig = {
+      focusMinutes: 25,
+      breakMinutes: 5,
+      anchor: Date.UTC(2026, 0, 1, 0, 0, 0),
+      ringLength: 339.292
+    };
+
+    function studyNow() {
+      return Date.now() + Number(state.serverOffset || 0);
     }
 
-    function closeChat() {
-      state.chatOpen = false;
-      el.chatDrawer.classList.remove('show');
-      el.chatBackdrop.classList.remove('show');
-      el.chatDrawer.setAttribute('aria-hidden', 'true');
+    function getStudyCycle(now = studyNow()) {
+      const focusMs = studyConfig.focusMinutes * 60 * 1000;
+      const breakMs = studyConfig.breakMinutes * 60 * 1000;
+      const cycleMs = focusMs + breakMs;
+      const elapsed = ((now - studyConfig.anchor) % cycleMs + cycleMs) % cycleMs;
+      const isFocus = elapsed < focusMs;
+      const phaseDuration = isFocus ? focusMs : breakMs;
+      const phaseElapsed = isFocus ? elapsed : elapsed - focusMs;
+      return {
+        phase: isFocus ? 'focus' : 'break',
+        label: isFocus ? 'Tập trung' : 'Nghỉ giải lao',
+        remaining: Math.max(0, phaseDuration - phaseElapsed),
+        progress: Math.min(1, Math.max(0, phaseElapsed / phaseDuration)),
+        endsAt: now + Math.max(0, phaseDuration - phaseElapsed)
+      };
+    }
+
+    function formatTimer(ms) {
+      const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function playStudyBell() {
+      if (!state.soundEnabled) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const context = new AudioContextClass();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(660, context.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(880, context.currentTime + .25);
+        gain.gain.setValueAtTime(.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.12, context.currentTime + .02);
+        gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .55);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + .58);
+        oscillator.addEventListener('ended', () => context.close());
+      } catch (_) {}
+    }
+
+    function updateStudyTimer() {
+      const cycle = getStudyCycle();
+      const timerText = formatTimer(cycle.remaining);
+      if (el.studyTimer) el.studyTimer.textContent = timerText;
+      if (el.studyTimerSide) el.studyTimerSide.textContent = timerText;
+      if (el.studyPhase) el.studyPhase.textContent = cycle.label;
+      if (el.studyPhaseSide) el.studyPhaseSide.textContent = cycle.label;
+      if (el.studyTimerCaption) {
+        const nextLabel = cycle.phase === 'focus' ? 'Nghỉ lúc' : 'Học lại lúc';
+        el.studyTimerCaption.textContent = `${nextLabel} ${formatClock(cycle.endsAt)} · Nhịp chung 25/5`;
+      }
+      if (el.studyTimerProgress) {
+        el.studyTimerProgress.style.strokeDashoffset = String(studyConfig.ringLength * cycle.progress);
+      }
+      if (state.studyPhase && state.studyPhase !== cycle.phase) {
+        playStudyBell();
+        toast(cycle.phase === 'focus' ? 'Phiên tập trung mới đã bắt đầu.' : 'Đến giờ nghỉ 5 phút rồi.', 'success', 4200);
+      }
+      state.studyPhase = cycle.phase;
+
+      if (Date.now() - state.lastMemberRender > 30000) {
+        state.lastMemberRender = Date.now();
+        renderStudyMembers();
+      }
+    }
+
+    function restoreStudyForm() {
+      const subject = local.get('studySubject');
+      const grade = local.get('studyGrade');
+      const goal = local.get('studyGoal');
+      if (subject && Array.from(el.studySubject.options).some(option => option.value === subject)) el.studySubject.value = subject;
+      if (grade && Array.from(el.studyGrade.options).some(option => option.value === grade)) el.studyGrade.value = grade;
+      if (goal) el.studyGoal.value = String(goal).slice(0, 100);
+      state.soundEnabled = local.get('studySound') === '1';
+      updateStudySoundUI();
+    }
+
+    function getStudyFormData() {
+      return {
+        subject: normalizeText(el.studySubject.value, 40),
+        grade: normalizeText(el.studyGrade.value, 30),
+        goal: normalizeText(el.studyGoal.value, 100)
+      };
+    }
+
+    function saveStudyForm(data) {
+      local.set('studySubject', data.subject);
+      local.set('studyGrade', data.grade);
+      local.set('studyGoal', data.goal);
+    }
+
+    function setStudyJoinedUI(joined) {
+      state.studyJoined = joined;
+      el.studyMyStatus.classList.toggle('show', joined);
+      el.studyLeaveButton.classList.toggle('show', joined);
+      el.studyCompleteButton.classList.toggle('show', joined);
+      const label = $('span', el.studyJoinButton);
+      if (label) label.textContent = joined ? 'Cập nhật mục tiêu' : 'Tham gia học cùng';
+      const icon = $('use', el.studyJoinButton);
+      if (icon) icon.setAttribute('href', joined ? '#i-check' : '#i-users');
+      updateStudyCompleteUI();
+      updateStudyChatComposerUI();
+    }
+
+    function updateStudyCompleteUI() {
+      const done = Boolean(state.studyCompleted);
+      el.studyCompleteButton.classList.toggle('done', done);
+      const label = $('span', el.studyCompleteButton);
+      if (label) label.textContent = done ? 'Đã hoàn thành mục tiêu' : 'Đánh dấu đã hoàn thành mục tiêu';
+    }
+
+    async function upsertStudyMember(silent = false) {
+      const data = getStudyFormData();
+      if (!data.subject || !data.grade || !data.goal) {
+        if (!silent) toast('Hãy chọn môn, lớp và nhập mục tiêu học tập.', 'error');
+        return false;
+      }
+      saveStudyForm(data);
+      const memberRef = refs.studyMembers.child(presenceSessionId);
+      state.studyMemberRef = memberRef;
+      try {
+        await memberRef.onDisconnect().remove();
+        const existing = state.studyMembers.get(presenceSessionId) || {};
+        await memberRef.set({
+          userId: identity.id,
+          name: identity.name,
+          subject: data.subject,
+          grade: data.grade,
+          goal: data.goal,
+          joinedAt: existing.joinedAt || serverTimestamp,
+          updatedAt: serverTimestamp,
+          completed: Boolean(state.studyCompleted),
+          lastChatAt: existing.lastChatAt || null
+        });
+        local.set('studyJoined', '1');
+        setStudyJoinedUI(true);
+        if (!silent) toast(existing.joinedAt ? 'Mục tiêu học tập đã được cập nhật.' : 'Bạn đã tham gia phòng tự học.', 'success');
+        return true;
+      } catch (error) {
+        console.error(error);
+        if (!silent) toast(describeFirebaseError(error, 'Không thể tham gia phòng học.'), 'error');
+        return false;
+      }
+    }
+
+    async function leaveStudyRoom() {
+      local.remove('studyJoined');
+      state.studyCompleted = false;
+      try {
+        if (state.studyMemberRef) await state.studyMemberRef.onDisconnect().cancel();
+        await refs.studyMembers.child(presenceSessionId).remove();
+      } catch (error) {
+        console.error(error);
+        toast(describeFirebaseError(error, 'Không thể rời phòng học.'), 'error');
+      } finally {
+        setStudyJoinedUI(false);
+        toast('Bạn đã rời phòng tự học.', 'info');
+      }
+    }
+
+    async function toggleStudyComplete() {
+      if (!state.studyJoined) return;
+      state.studyCompleted = !state.studyCompleted;
+      updateStudyCompleteUI();
+      try {
+        await refs.studyMembers.child(presenceSessionId).update({ completed: state.studyCompleted, updatedAt: serverTimestamp });
+        toast(state.studyCompleted ? 'Tuyệt vời! Mục tiêu của bạn đã hoàn thành.' : 'Đã chuyển mục tiêu về trạng thái đang thực hiện.', state.studyCompleted ? 'success' : 'info');
+      } catch (error) {
+        state.studyCompleted = !state.studyCompleted;
+        updateStudyCompleteUI();
+        toast(describeFirebaseError(error, 'Không thể cập nhật mục tiêu.'), 'error');
+      }
+    }
+
+    function renderStudyMembers() {
+      if (!el.studyMembers) return;
+      const members = Array.from(state.studyMembers.entries()).map(([id, value]) => ({ id, ...(value || {}) }));
+      members.sort((a, b) => {
+        if (a.id === presenceSessionId) return -1;
+        if (b.id === presenceSessionId) return 1;
+        if (Boolean(a.completed) !== Boolean(b.completed)) return a.completed ? 1 : -1;
+        return numberTimestamp(a.joinedAt) - numberTimestamp(b.joinedAt);
+      });
+
+      const count = members.length;
+      [el.studyOnlineCount, el.studyCountSide, el.studyCountSideCard].forEach(node => { if (node) node.textContent = String(count); });
+      if (el.studyCompletedCount) el.studyCompletedCount.textContent = String(members.filter(member => member.completed).length);
+      if (el.studySubjectCount) el.studySubjectCount.textContent = String(new Set(members.map(member => member.subject).filter(Boolean)).size);
+
+      el.studyMembers.innerHTML = '';
+      if (!members.length) {
+        const empty = document.createElement('div');
+        empty.className = 'study-empty';
+        empty.textContent = 'Chưa có ai trong phòng. Hãy là người bắt đầu phiên học đầu tiên.';
+        el.studyMembers.appendChild(empty);
+        return;
+      }
+
+      members.forEach(member => {
+        const own = member.id === presenceSessionId;
+        const joinedMinutes = Math.max(0, Math.floor((studyNow() - numberTimestamp(member.joinedAt)) / 60000));
+        const card = document.createElement('div');
+        card.className = `study-member${own ? ' own' : ''}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'study-member-avatar';
+        avatar.textContent = avatarLetters(member.name || 'Ẩn danh');
+        avatar.style.background = avatarGradient(member.userId || member.id);
+
+        const main = document.createElement('div');
+        main.className = 'study-member-main';
+        const name = document.createElement('div');
+        name.className = 'study-member-name';
+        name.textContent = own ? `${member.name || identity.name} · Bạn` : (member.name || 'Thành viên ẩn danh');
+        const detail = document.createElement('div');
+        detail.className = 'study-member-detail';
+        detail.textContent = `${member.subject || 'Đang học'} · ${member.grade || ''} · ${member.goal || 'Chưa đặt mục tiêu'}`;
+        const meta = document.createElement('div');
+        meta.className = 'study-member-meta';
+        const dot = document.createElement('i');
+        dot.className = `study-member-state${member.completed ? ' done' : ''}`;
+        const status = document.createElement('span');
+        status.textContent = member.completed ? 'Đã hoàn thành' : `${joinedMinutes} phút trong phòng`;
+        meta.append(dot, status);
+        main.append(name, detail, meta);
+        card.append(avatar, main);
+        el.studyMembers.appendChild(card);
+      });
+    }
+
+    function openStudyMembers() {
+      if (!el.studyMembersModal) return;
+      el.studyMembersModal.classList.add('show');
+      el.studyMembersToggle.setAttribute('aria-expanded', 'true');
+      el.body.classList.add('no-scroll');
+    }
+
+    function closeStudyMembers() {
+      if (!el.studyMembersModal) return;
+      el.studyMembersModal.classList.remove('show');
+      el.studyMembersToggle.setAttribute('aria-expanded', 'false');
       if (!el.reportModal.classList.contains('show')) el.body.classList.remove('no-scroll');
     }
 
-    function updateUnread() {
-      el.unreadBadge.textContent = state.unread > 99 ? '99+' : String(state.unread);
-      el.unreadBadge.classList.toggle('show', state.unread > 0);
+    function getStudyChatLastAt() {
+      const mine = state.studyMembers.get(presenceSessionId) || {};
+      return Math.max(Number(mine.lastChatAt || 0), Number(local.get('studyChatLastAt') || 0));
     }
 
-    function isChatNearBottom() {
-      return el.chatMessages.scrollHeight - el.chatMessages.scrollTop - el.chatMessages.clientHeight < 90;
+    function getStudyChatRemaining() {
+      return Math.max(0, limits.studyChat.cooldown - (studyNow() - getStudyChatLastAt()));
     }
 
-    function scrollChatBottom() {
-      el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
-    }
-
-    function initChat() {
-      const onError = error => showListenerError('chat', error, 'Không thể tải phòng chat.');
-      chatQuery.on('child_added', snapshot => {
-        const message = snapshot.val() || {};
-        if (!message.text || state.chatKeys.has(snapshot.key)) return;
-        const shouldStick = !state.chatInitialized || isChatNearBottom() || (message.authorId ? message.authorId === identity.id : message.name === identity.name);
-        state.chatKeys.add(snapshot.key);
-        renderChatMessage(snapshot.key, message);
-        if (state.chatInitialized && !state.chatOpen && message.authorId !== identity.id && message.name !== identity.name) {
-          state.unread += 1;
-          updateUnread();
-        }
-        if (shouldStick) window.requestAnimationFrame(scrollChatBottom);
-      }, onError);
-      chatQuery.on('child_changed', snapshot => {
-        const message = snapshot.val() || {};
-        if (message.text) renderChatMessage(snapshot.key, message);
-      }, onError);
-      chatQuery.on('child_removed', snapshot => {
-        state.chatKeys.delete(snapshot.key);
-        const node = el.chatMessages.querySelector(`[data-message-id="${snapshot.key}"]`);
-        if (node) node.remove();
-      }, onError);
-      chatQuery.once('value').then(() => {
-        state.chatInitialized = true;
-        scrollChatBottom();
-      }).catch(onError);
-    }
-
-    function renderChatMessage(messageId, message) {
-      const own = message.authorId ? message.authorId === identity.id : message.name === identity.name;
-      let wrapper = el.chatMessages.querySelector(`[data-message-id="${messageId}"]`);
-      if (!wrapper) {
-        wrapper = document.createElement('div');
-        wrapper.dataset.messageId = messageId;
-        el.chatMessages.appendChild(wrapper);
+    function updateStudyChatComposerUI() {
+      if (!el.studyChatInput || !el.studyChatSubmit || !el.studyChatCooldown) return;
+      const remaining = getStudyChatRemaining();
+      if (!state.studyJoined) {
+        el.studyChatInput.disabled = true;
+        el.studyChatInput.placeholder = 'Tham gia phòng để trò chuyện…';
+        el.studyChatSubmit.disabled = true;
+        el.studyChatCooldown.textContent = 'Tham gia phòng để gửi tin nhắn.';
+        return;
       }
-      wrapper.className = `chat-message ${own ? 'own' : 'other'}`;
-      wrapper.innerHTML = '<div class="chat-name"></div><div class="chat-bubble"></div><div class="chat-time"></div>';
-      $('.chat-name', wrapper).textContent = own ? 'Bạn' : (message.name || 'Thành viên ẩn danh');
-      $('.chat-bubble', wrapper).textContent = String(message.text || '');
-      $('.chat-time', wrapper).textContent = formatClock(message.timestamp);
+      el.studyChatInput.disabled = false;
+      el.studyChatInput.placeholder = 'Trao đổi ngắn với mọi người trong phòng…';
+      if (remaining > 0) {
+        const seconds = Math.ceil(remaining / 1000);
+        el.studyChatSubmit.disabled = true;
+        el.studyChatCooldown.textContent = `Bạn có thể gửi tin tiếp theo sau ${seconds} giây.`;
+      } else {
+        el.studyChatSubmit.disabled = false;
+        el.studyChatCooldown.textContent = 'Sẵn sàng gửi · mỗi người 1 tin/90 giây.';
+      }
     }
 
-    async function submitChat(event) {
+    function renderStudyChat() {
+      if (!el.studyChatMessages) return;
+      const messages = state.studyChatMessages.slice().sort((a, b) => numberTimestamp(a.timestamp) - numberTimestamp(b.timestamp));
+      el.studyChatMessages.innerHTML = '';
+      if (!messages.length) {
+        const empty = document.createElement('div');
+        empty.className = 'study-chat-empty';
+        empty.textContent = 'Chưa có tin nhắn. Hãy tham gia phòng và gửi lời chào đầu tiên.';
+        el.studyChatMessages.appendChild(empty);
+        return;
+      }
+
+      messages.forEach(message => {
+        const own = message.sessionId === presenceSessionId || message.userId === identity.id;
+        const row = document.createElement('article');
+        row.className = `study-chat-message${own ? ' own' : ''}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'study-chat-avatar';
+        avatar.textContent = avatarLetters(message.name || 'Ẩn danh');
+        avatar.style.background = avatarGradient(message.userId || message.sessionId || message.name);
+
+        const main = document.createElement('div');
+        main.className = 'study-chat-main';
+
+        const author = document.createElement('div');
+        author.className = 'study-chat-author';
+        const name = document.createElement('span');
+        name.className = 'study-chat-name';
+        name.textContent = own ? `${message.name || identity.name} · Bạn` : (message.name || 'Thành viên ẩn danh');
+        const grade = document.createElement('span');
+        grade.className = 'study-chat-grade';
+        grade.textContent = message.grade || 'Chưa rõ lớp';
+        author.append(name, grade);
+
+        const goal = document.createElement('div');
+        goal.className = 'study-chat-goal';
+        goal.textContent = `Mục tiêu: ${message.goal || 'Chưa đặt mục tiêu'}${message.subject ? ` · ${message.subject}` : ''}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'study-chat-bubble';
+        bubble.textContent = String(message.text || '').slice(0, limits.studyChat.max);
+
+        const time = document.createElement('div');
+        time.className = 'study-chat-time';
+        time.textContent = formatClock(message.timestamp);
+
+        main.append(author, goal, bubble, time);
+        row.append(avatar, main);
+        el.studyChatMessages.appendChild(row);
+      });
+      el.studyChatMessages.scrollTop = el.studyChatMessages.scrollHeight;
+    }
+
+    async function submitStudyChat(event) {
       event.preventDefault();
-      const text = normalizeText(el.chatInput.value, limits.chat.max);
-      if (!text) return;
-      const cooldown = cooldownReady('chat', limits.chat.cooldown);
-      if (!cooldown.ready) return toast('Bạn đang gửi quá nhanh. Hãy chờ một chút.', 'error');
-      const button = $('button[type="submit"]', el.chatForm);
-      button.disabled = true;
+      if (!state.studyJoined) return toast('Bạn cần tham gia phòng học trước khi trò chuyện.', 'error');
+      const text = normalizeText(el.studyChatInput.value, limits.studyChat.max);
+      if (!text) return toast('Hãy nhập nội dung tin nhắn.', 'error');
+      const remaining = getStudyChatRemaining();
+      if (remaining > 0) return toast(`Vui lòng chờ ${Math.ceil(remaining / 1000)} giây trước khi gửi tin tiếp theo.`, 'error');
+
+      const member = state.studyMembers.get(presenceSessionId) || {};
+      const formData = getStudyFormData();
+      const messageRef = refs.studyChat.push();
+      const now = studyNow();
+      setButtonBusy(el.studyChatSubmit, true, '…');
       try {
-        await refs.chat.push({ name: identity.name, authorId: identity.id, text, timestamp: serverTimestamp });
-        cooldown.commit();
-        el.chatInput.value = '';
-        autoResizeTextarea(el.chatInput);
+        const updates = {};
+        updates[`study_rooms/general/chat/${messageRef.key}`] = {
+          sessionId: presenceSessionId,
+          userId: identity.id,
+          name: identity.name,
+          subject: member.subject || formData.subject,
+          grade: member.grade || formData.grade,
+          goal: member.goal || formData.goal,
+          text,
+          timestamp: serverTimestamp
+        };
+        updates[`study_rooms/general/members/${presenceSessionId}/lastChatAt`] = serverTimestamp;
+        await db.ref().update(updates);
+        local.set('studyChatLastAt', now);
+        el.studyChatInput.value = '';
+        el.studyChatCharCount.textContent = '0';
+        updateStudyChatComposerUI();
       } catch (error) {
         console.error(error);
         toast(describeFirebaseError(error, 'Không thể gửi tin nhắn.'), 'error');
       } finally {
-        button.disabled = false;
+        setButtonBusy(el.studyChatSubmit, false);
+        updateStudyChatComposerUI();
       }
     }
 
-    function autoResizeTextarea(textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 110)}px`;
+    function updateStudySoundUI() {
+      const use = $('use', el.studySoundToggle);
+      const label = $('span', el.studySoundToggle);
+      if (use) use.setAttribute('href', state.soundEnabled ? '#i-volume' : '#i-volume-off');
+      if (label) label.textContent = state.soundEnabled ? 'Âm báo: Bật' : 'Âm báo: Tắt';
+      el.studySoundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
+    }
+
+    function toggleStudySound() {
+      state.soundEnabled = !state.soundEnabled;
+      local.set('studySound', state.soundEnabled ? '1' : '0');
+      updateStudySoundUI();
+      if (state.soundEnabled) playStudyBell();
+    }
+
+    function initStudyRoom() {
+      restoreStudyForm();
+      refs.serverTimeOffset.on('value', snapshot => {
+        state.serverOffset = Number(snapshot.val() || 0);
+        updateStudyTimer();
+      }, error => showListenerError('study-time', error, 'Không thể đồng bộ đồng hồ phòng học.'));
+
+      refs.studyMembers.on('value', snapshot => {
+        state.studyMembers.clear();
+        snapshot.forEach(child => state.studyMembers.set(child.key, child.val() || {}));
+        const mine = state.studyMembers.get(presenceSessionId);
+        if (mine) {
+          state.studyCompleted = Boolean(mine.completed);
+          setStudyJoinedUI(true);
+        } else if (local.get('studyJoined') !== '1') {
+          state.studyCompleted = false;
+          setStudyJoinedUI(false);
+        }
+        renderStudyMembers();
+      }, error => showListenerError('study-members', error, 'Không thể tải danh sách phòng học.'));
+
+      refs.connected.on('value', snapshot => {
+        if (snapshot.val() === true && local.get('studyJoined') === '1') upsertStudyMember(true);
+      });
+
+      studyChatQuery.on('value', snapshot => {
+        state.studyChatMessages = [];
+        snapshot.forEach(child => state.studyChatMessages.push({ id: child.key, ...(child.val() || {}) }));
+        renderStudyChat();
+      }, error => showListenerError('study-chat', error, 'Không thể tải trò chuyện phòng học.'));
+
+      updateStudyTimer();
+      updateStudyChatComposerUI();
+      window.setInterval(updateStudyTimer, 1000);
+      state.studyChatCooldownTimer = window.setInterval(updateStudyChatComposerUI, 1000);
     }
 
     function handleFeedClick(event) {
@@ -1685,24 +2453,39 @@
       });
       el.postList.addEventListener('click', handleFeedClick);
       el.postList.addEventListener('submit', handleFeedSubmit);
-      [el.chatFab, el.openChatCard].forEach(button => { if (button) button.addEventListener('click', openChat); });
-      [el.chatClose, el.chatBackdrop].forEach(button => { if (button) button.addEventListener('click', closeChat); });
-      el.chatForm.addEventListener('submit', submitChat);
-      el.chatInput.addEventListener('input', () => autoResizeTextarea(el.chatInput));
-      el.chatInput.addEventListener('keydown', event => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-          if (typeof el.chatForm.requestSubmit === 'function') el.chatForm.requestSubmit();
-          else el.chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-        }
+
+      el.studyJoinForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        setButtonBusy(el.studyJoinButton, true, state.studyJoined ? 'Đang cập nhật…' : 'Đang tham gia…');
+        await upsertStudyMember(false);
+        setButtonBusy(el.studyJoinButton, false);
+        setStudyJoinedUI(state.studyJoined);
       });
+      el.studyLeaveButton.addEventListener('click', leaveStudyRoom);
+      el.studyCompleteButton.addEventListener('click', toggleStudyComplete);
+      el.studySoundToggle.addEventListener('click', toggleStudySound);
+      el.studyMembersToggle.addEventListener('click', openStudyMembers);
+      el.studyMembersClose.addEventListener('click', closeStudyMembers);
+      el.studyMembersModal.addEventListener('click', event => { if (event.target === el.studyMembersModal) closeStudyMembers(); });
+      el.studyChatForm.addEventListener('submit', submitStudyChat);
+      el.studyChatInput.addEventListener('input', () => {
+        el.studyChatCharCount.textContent = String(el.studyChatInput.value.length);
+        el.studyChatInput.style.height = 'auto';
+        el.studyChatInput.style.height = `${Math.min(el.studyChatInput.scrollHeight, 115)}px`;
+      });
+      el.studyRoomShortcut.addEventListener('click', () => {
+        el.studyRoom.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.setTimeout(() => el.studyGoal.focus(), 450);
+      });
+      [el.studySubject, el.studyGrade, el.studyGoal].forEach(input => input.addEventListener('change', () => saveStudyForm(getStudyFormData())));
+
       [el.reportClose, el.reportCancel].forEach(button => button.addEventListener('click', closeReport));
       el.reportSubmit.addEventListener('click', submitReport);
       el.reportModal.addEventListener('click', event => { if (event.target === el.reportModal) closeReport(); });
       document.addEventListener('keydown', event => {
         if (event.key !== 'Escape') return;
-        if (el.reportModal.classList.contains('show')) closeReport();
-        else if (state.chatOpen) closeChat();
+        if (el.studyMembersModal.classList.contains('show')) closeStudyMembers();
+        else if (el.reportModal.classList.contains('show')) closeReport();
       });
     }
 
@@ -1713,8 +2496,8 @@
       initPresence();
       initAnnouncement();
       initPosts();
-      initChat();
-      console.log('✅ Diễn đàn Ẩn Danh đã sẵn sàng.');
+      initStudyRoom();
+      console.log('✅ binhsonforum và phòng tự học đã sẵn sàng.');
     }
 
     init();
