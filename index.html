@@ -101,10 +101,12 @@
       z-index: 100;
       height: var(--header-h);
       border-bottom: 1px solid var(--line);
-      background: color-mix(in srgb, var(--surface-solid) 76%, transparent);
+      background: color-mix(in srgb, var(--surface-solid) 88%, transparent);
+      box-shadow: 0 8px 28px rgba(20, 22, 38, .06);
       backdrop-filter: blur(20px) saturate(160%);
     }
     .header-inner {
+      width: 100%;
       max-width: 1240px;
       height: 100%;
       margin: 0 auto;
@@ -112,17 +114,31 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 18px;
+      gap: 20px;
     }
-    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: -10px;
+      padding: 7px 10px;
+      border-radius: 16px;
+      color: inherit;
+      text-decoration: none;
+      transition: background .18s ease, transform .18s ease;
+    }
+    .brand:hover { background: var(--surface); }
+    .brand:active { transform: scale(.985); }
     .brand-mark {
       position: relative;
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
       display: grid;
       place-items: center;
       color: white;
+      font-size: 16px;
       font-weight: 900;
       letter-spacing: -.06em;
       background: linear-gradient(145deg, #8c7dff, #5a49ee 58%, #2fc4d4);
@@ -133,40 +149,86 @@
     .brand-mark::after {
       content: "";
       position: absolute;
-      width: 24px;
-      height: 24px;
+      width: 25px;
+      height: 25px;
       border-radius: 50%;
       background: rgba(255,255,255,.2);
       top: -9px;
       right: -6px;
     }
     .brand-copy { min-width: 0; }
-    .brand-title { font-size: 17px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap; }
-    .brand-subtitle { color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .header-actions { display: flex; align-items: center; gap: 9px; }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 850;
+      line-height: 1.1;
+      letter-spacing: -.035em;
+      white-space: nowrap;
+    }
+    .brand-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
     .identity-pill {
+      min-height: 46px;
       display: flex;
       align-items: center;
       gap: 9px;
-      max-width: 250px;
-      padding: 7px 11px 7px 7px;
+      max-width: 260px;
+      padding: 5px 12px 5px 5px;
       border: 1px solid var(--line);
-      border-radius: 999px;
-      background: var(--surface);
-      box-shadow: var(--shadow-sm);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 6px 18px rgba(31, 35, 58, .05);
     }
-    .identity-avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: white; font-size: 12px; font-weight: 800; }
-    .identity-text { min-width: 0; }
-    .identity-label { display: block; color: var(--subtle); font-size: 10px; line-height: 1.15; text-transform: uppercase; letter-spacing: .08em; }
-    .identity-name { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
-    .icon-btn {
-      width: 42px;
-      height: 42px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
+    .identity-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
       display: grid;
       place-items: center;
-      background: var(--surface);
+      color: white;
+      font-size: 11px;
+      font-weight: 850;
+      flex: 0 0 auto;
+    }
+    .identity-text { min-width: 0; }
+    .identity-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--subtle);
+      font-size: 9px;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+    .identity-name {
+      display: block;
+      max-width: 170px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .icon-btn {
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 6px 18px rgba(31, 35, 58, .05);
       cursor: pointer;
       transition: transform .18s ease, background .18s ease, border-color .18s ease;
     }
@@ -425,10 +487,14 @@
       .right-sidebar { display: none; }
     }
     @media (max-width: 800px) {
-      :root { --header-h: 64px; }
-      .header-inner { padding: 0 14px; }
+      :root { --header-h: 68px; }
+      .header-inner { padding: 0 14px; gap: 10px; }
+      .brand { gap: 9px; margin-left: -6px; padding: 5px 6px; }
+      .brand-mark { width: 40px; height: 40px; border-radius: 13px; }
       .brand-subtitle, .identity-label { display: none; }
-      .identity-pill { max-width: 170px; }
+      .identity-pill { min-height: 42px; max-width: 170px; padding: 4px 9px 4px 4px; border-radius: 14px; }
+      .identity-avatar { width: 32px; height: 32px; border-radius: 10px; }
+      .icon-btn { width: 42px; height: 42px; border-radius: 14px; }
       .page-shell { padding: 16px 12px 90px; grid-template-columns: 1fr; gap: 14px; }
       .left-sidebar { display: none; }
       .hero { min-height: 160px; padding: 21px; }
@@ -437,9 +503,11 @@
       .chat-fab { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); }
     }
     @media (max-width: 520px) {
+      .header-inner { padding: 0 10px; gap: 6px; }
+      .brand { gap: 7px; margin-left: -4px; padding: 4px; }
       .brand-title { font-size: 15px; }
-      .identity-pill { padding-right: 8px; }
-      .identity-name { max-width: 88px; }
+      .identity-pill { max-width: 128px; padding-right: 7px; }
+      .identity-name { max-width: 78px; }
       .hero h1 { font-size: 27px; }
       .hero-meta { gap: 11px; }
       .composer-footer { align-items: stretch; flex-direction: column; }
@@ -452,6 +520,12 @@
       .chat-drawer { inset: 0; width: 100%; border-radius: 0; border: 0; }
       .chat-drawer-backdrop { display: none !important; }
       .toast-stack { top: 74px; right: 12px; width: calc(100vw - 24px); }
+    }
+    @media (max-width: 390px) {
+      .brand-copy { max-width: 112px; }
+      .brand-title { overflow: hidden; text-overflow: ellipsis; }
+      .identity-pill { width: 42px; padding: 4px; }
+      .identity-text { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -479,13 +553,13 @@
 
   <header class="app-header">
     <div class="header-inner">
-      <div class="brand">
+      <a class="brand" href="./" aria-label="Về trang chủ" title="Về trang chủ">
         <div class="brand-mark" aria-hidden="true">A</div>
         <div class="brand-copy">
           <div class="brand-title">binhsonforum</div>
           <div class="brand-subtitle">Không phán xét · Chỉ lắng nghe</div>
         </div>
-      </div>
+      </a>
 
       <div class="header-actions">
         <div class="identity-pill" title="Danh tính ẩn danh được lưu trên thiết bị này">
@@ -523,18 +597,6 @@
     </aside>
 
     <section class="main-column">
-      <section class="hero" aria-labelledby="heroTitle">
-        <div class="hero-content">
-          <span class="hero-badge"><i class="live-dot"></i><span id="onlineCountHero">0</span> người đang online</span>
-          <h1 id="heroTitle">Một góc nhỏ để bạn nói điều thật lòng.</h1>
-          <p>Đăng tâm sự, hỏi ý kiến hoặc trò chuyện cùng cộng đồng bằng một danh tính ẩn danh riêng trên thiết bị của bạn.</p>
-          <div class="hero-meta">
-            <span><svg class="icon icon-sm"><use href="#i-shield"></use></svg>Không hiện tên thật</span>
-            <span><svg class="icon icon-sm"><use href="#i-message"></use></svg>Chat thời gian thực</span>
-            <span><svg class="icon icon-sm"><use href="#i-spark"></use></svg>Giao diện mới</span>
-          </div>
-        </div>
-      </section>
 
       <section class="announcement" id="announcementBox" aria-live="polite">
         <div class="announcement-icon"><svg class="icon"><use href="#i-bell"></use></svg></div>
