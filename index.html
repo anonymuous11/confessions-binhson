@@ -878,89 +878,82 @@
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
 
-
-    /* Ô đăng bài gọn, rõ ràng và dễ nhận biết */
+    /* Ô đăng bài phong cách Facebook: avatar + thanh nhập bo tròn */
     .composer-post-panel {
       position: relative;
       overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--line));
+      border: 1px solid var(--line);
       background: var(--surface);
       box-shadow: var(--shadow-sm);
-    }
-    .composer-post-panel::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 16px;
-      right: 16px;
-      height: 2px;
-      border-radius: 0 0 999px 999px;
-      background: linear-gradient(90deg, var(--primary), #8b7cff, var(--cyan));
-      pointer-events: none;
     }
     .composer-post-entry {
       position: relative;
       z-index: 1;
       margin: 0;
-      padding: 13px 14px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
+      padding: 12px 14px 9px;
+      display: block;
       border: 0;
       border-radius: inherit;
       background: transparent;
-      transition: background .18s ease;
+      cursor: pointer;
     }
-    .composer-post-entry:hover {
-      background: color-mix(in srgb, var(--primary-soft) 32%, transparent);
+    .composer-facebook-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .composer-compact-avatar {
       width: 40px;
       height: 40px;
-      border-radius: 13px;
+      border-radius: 50%;
+      box-shadow: none;
     }
-    .composer-post-placeholder {
+    .composer-facebook-input {
       min-width: 0;
       flex: 1;
-      padding: 0;
+      min-height: 42px;
+      padding: 0 15px;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-      border: 0 !important;
-      background: transparent !important;
-    }
-    .composer-post-placeholder strong {
-      color: var(--text);
-      font-size: 13px;
-      line-height: 1.25;
-      font-weight: 850;
-    }
-    .composer-post-placeholder span {
-      overflow: hidden;
+      align-items: center;
+      border: 1px solid transparent;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 10px;
-      line-height: 1.35;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      background: var(--surface-2);
+      font-size: 13px;
+      transition: background .18s ease, border-color .18s ease;
     }
-    .composer-post-trigger {
-      width: auto;
-      min-width: 96px;
-      height: 38px;
-      padding: 0 13px;
-      display: inline-flex;
+    .composer-post-entry:hover .composer-facebook-input {
+      border-color: color-mix(in srgb, var(--primary) 18%, var(--line));
+      background: var(--surface-3);
+    }
+    .composer-facebook-actions {
+      margin-top: 9px;
+      padding-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      border-top: 1px solid var(--line);
+    }
+    .composer-facebook-action {
+      min-height: 30px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      border-radius: 12px;
-      color: white;
-      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-      box-shadow: 0 8px 19px rgba(109, 93, 252, .2);
-      font-size: 11px;
-      font-weight: 850;
-      white-space: nowrap;
+      gap: 6px;
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      transition: color .18s ease, background .18s ease;
     }
-    .composer-post-trigger:hover { transform: translateY(-1px); }
+    .composer-post-entry:hover .composer-facebook-action {
+      color: var(--text);
+    }
+    .composer-facebook-action:hover {
+      color: var(--primary) !important;
+      background: var(--primary-soft);
+    }
+    .composer.open .composer-facebook-actions { display: none; }
     .composer-post-panel .composer-form {
       position: relative;
       z-index: 1;
@@ -986,22 +979,17 @@
     }
 
     @media (max-width: 520px) {
-      .composer-post-entry { padding: 11px 11px; gap: 9px; }
-      .composer-compact-avatar { width: 36px; height: 36px; border-radius: 12px; }
-      .composer-post-placeholder strong { font-size: 12px; }
-      .composer-post-placeholder span { font-size: 9px; }
-      .composer-post-trigger {
-        min-width: 76px;
-        width: auto;
-        height: 36px;
-        padding: 0 10px;
-      }
-      .composer-post-trigger span { display: inline; }
+      .composer-post-entry { padding: 10px 10px 7px; }
+      .composer-facebook-top { gap: 9px; }
+      .composer-compact-avatar { width: 37px; height: 37px; }
+      .composer-facebook-input { min-height: 39px; padding: 0 13px; font-size: 12px; }
+      .composer-facebook-actions { margin-top: 7px; padding-top: 6px; }
+      .composer-facebook-action { min-height: 28px; gap: 4px; font-size: 8px; }
+      .composer-facebook-action .icon { width: 15px; height: 15px; }
       .composer-post-panel .composer-form { padding: 11px 10px 12px; }
       .composer-post-panel textarea { min-height: 98px; }
       .composer-submit-btn { min-width: 0; width: 100%; }
     }
-
 
     /* Phòng học mở trong lớp phủ tập trung */
     .study-room-overlay {
@@ -1049,50 +1037,118 @@
     .study-room-modal-close:hover { transform: translateY(-1px); background: var(--surface-3); }
     .study-room-dialog > .study-room { border: 0; border-radius: 0; box-shadow: none; }
 
-    /* Thẻ phòng học nhỏ ở thanh bên */
-    .study-side-card { cursor: default; }
-    .study-side-card-icon { width: 31px; height: 31px; border: 1px solid rgba(255,255,255,.16); border-radius: 10px; display: grid; place-items: center; background: rgba(255,255,255,.1); }
+    /* Thẻ phòng học thu gọn ở thanh bên */
+    .study-side-card {
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 16px;
+      color: white;
+      background: linear-gradient(135deg, #6d5dfc, #4d88df 72%, #20bacb);
+      box-shadow: 0 12px 27px rgba(84,84,224,.19);
+    }
+    .study-side-card-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+    .study-side-card-title { font-size: 12px; font-weight: 900; }
+    .study-side-card-icon { width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: 9px; display: grid; place-items: center; background: rgba(255,255,255,.1); }
+    .study-side-card-icon .icon { width: 17px; height: 17px; }
+    .study-side-summary {
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .study-side-summary-item {
+      min-width: 0;
+      flex: 1;
+      padding: 7px 8px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px;
+      background: rgba(255,255,255,.1);
+    }
+    .study-side-summary-item strong { display: block; font-size: 13px; line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .study-side-summary-item span { display: block; margin-top: 3px; overflow: hidden; color: rgba(255,255,255,.68); font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .study-participant-preview {
+      min-width: 0;
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .study-participant-avatars {
+      min-width: 25px;
+      display: flex;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+    .study-preview-avatar {
+      width: 25px;
+      height: 25px;
+      margin-left: -7px;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255,255,255,.92);
+      border-radius: 50%;
+      color: white;
+      font-size: 6px;
+      font-weight: 900;
+      box-shadow: 0 3px 9px rgba(20,20,65,.17);
+    }
+    .study-preview-avatar:first-child { margin-left: 0; }
+    .study-participant-names {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      color: rgba(255,255,255,.78);
+      font-size: 8px;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .study-side-join {
       width: 100%;
-      min-height: 40px;
-      margin-top: 11px;
+      min-height: 34px;
+      margin-top: 9px;
       border: 0;
-      border-radius: 12px;
+      border-radius: 10px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 6px;
       color: #5144da;
       background: white;
-      box-shadow: 0 9px 22px rgba(25, 20, 80, .18);
-      font-size: 10px;
+      box-shadow: 0 7px 18px rgba(25, 20, 80, .16);
+      font-size: 9px;
       font-weight: 900;
       cursor: pointer;
       transition: transform .18s ease, box-shadow .18s ease;
     }
-    .study-side-join:hover { transform: translateY(-1px); box-shadow: 0 12px 25px rgba(25, 20, 80, .24); }
-    .study-side-session { margin-top: 8px; color: rgba(255,255,255,.66); font-size: 8px; line-height: 1.45; text-align: center; }
-    .study-side-card.joined { box-shadow: 0 16px 38px rgba(46, 189, 142, .2); }
+    .study-side-join:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(25, 20, 80, .22); }
+    .study-side-session { display: none; }
+    .study-side-card.joined { box-shadow: 0 14px 31px rgba(46, 189, 142, .19); }
     .study-side-card.joined .study-side-join { color: white; background: rgba(24, 37, 67, .34); border: 1px solid rgba(255,255,255,.2); box-shadow: none; }
 
-    /* Lối vào phòng học trên màn hình hẹp */
+    /* Lối vào phòng học gọn trên màn hình hẹp */
     .study-mobile-entry {
       display: none;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 14px 15px;
+      gap: 10px;
+      padding: 10px 11px;
       border: 1px solid rgba(109,93,252,.22);
-      border-radius: 18px;
+      border-radius: 15px;
       color: white;
       background: linear-gradient(130deg, #6653ef, #557fe7 65%, #2ab5c4);
-      box-shadow: 0 13px 30px rgba(79, 77, 205, .2);
+      box-shadow: 0 10px 24px rgba(79, 77, 205, .18);
     }
-    .study-mobile-copy { min-width: 0; display: grid; gap: 2px; }
-    .study-mobile-copy strong { font-size: 13px; }
-    .study-mobile-copy > span { color: rgba(255,255,255,.75); font-size: 9px; }
-    .study-mobile-eyebrow { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,.78); font-size: 8px; font-weight: 800; }
-    .study-mobile-button { min-height: 39px; padding: 0 13px; border: 0; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #5144da; background: white; font-size: 9px; font-weight: 900; cursor: pointer; }
+    .study-mobile-main { min-width: 0; flex: 1; }
+    .study-mobile-copy { min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 7px; }
+    .study-mobile-copy strong { font-size: 11px; }
+    .study-mobile-copy > span { color: rgba(255,255,255,.75); font-size: 8px; }
+    .study-mobile-eyebrow { width: 100%; display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,.78); font-size: 7px; font-weight: 800; }
+    .study-mobile-participants { margin-top: 5px; }
+    .study-mobile-participants .study-preview-avatar { width: 21px; height: 21px; border-width: 1.5px; font-size: 5px; }
+    .study-mobile-participants .study-participant-names { font-size: 7px; }
+    .study-mobile-button { min-height: 34px; padding: 0 10px; border: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #5144da; background: white; font-size: 8px; font-weight: 900; cursor: pointer; }
 
     @media (max-width: 1080px) {
       .study-mobile-entry { display: flex; }
@@ -1102,6 +1158,146 @@
       .study-room-dialog { width: 100%; max-height: 100vh; min-height: 100vh; border: 0; border-radius: 0; }
       .study-room-modal-toolbar { min-height: 60px; padding-left: 14px; }
       .study-room-dialog > .study-room { min-height: calc(100vh - 60px); }
+    }
+
+  
+
+    /* Danh sách người học hiển thị cố định bên trái trong phòng */
+    .study-room-body {
+      display: grid;
+      grid-template-columns: minmax(260px, 310px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    .study-members-panel {
+      min-width: 0;
+      min-height: 520px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+      transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+    }
+    .study-members-panel.spotlight {
+      border-color: rgba(109,93,252,.55);
+      box-shadow: 0 0 0 4px rgba(109,93,252,.1), var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .study-members-panel-head {
+      padding: 14px 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--primary-soft), transparent 78%);
+    }
+    .study-members-panel-head .study-members-title {
+      margin: 0;
+      font-size: 12px;
+    }
+    .study-members-count {
+      min-width: 42px;
+      height: 30px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      background: var(--surface-solid);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .study-members-count .live-dot {
+      width: 7px;
+      height: 7px;
+      box-shadow: 0 0 0 4px var(--success-soft);
+    }
+    .study-members-panel .study-members {
+      min-height: 0;
+      max-height: 520px;
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      align-content: start;
+      gap: 9px;
+      padding: 11px;
+      scrollbar-gutter: stable;
+    }
+    .study-members-panel .study-member {
+      align-items: flex-start;
+      padding: 11px;
+      border-radius: 15px;
+      background: var(--surface-2);
+    }
+    .study-members-panel .study-member-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      font-size: 9px;
+    }
+    .study-members-panel .study-member-name {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+    .study-member-tags {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .study-member-tag {
+      padding: 3px 7px;
+      border-radius: 999px;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-size: 7px;
+      font-weight: 900;
+      line-height: 1.3;
+    }
+    .study-member-goal {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 8px;
+      line-height: 1.5;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .study-member-goal strong { color: var(--text); }
+    .study-members-panel .study-member-meta {
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    .study-members-panel .study-empty {
+      align-self: stretch;
+      margin: auto 0;
+    }
+    .study-chat {
+      min-width: 0;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+    }
+    .study-chat-messages {
+      min-height: 330px;
+      height: auto;
+      flex: 1;
+    }
+
+    @media (max-width: 820px) {
+      .study-room-body { grid-template-columns: 1fr; }
+      .study-members-panel { min-height: 0; }
+      .study-members-panel .study-members { max-height: 310px; }
+      .study-chat { min-height: 500px; }
     }
 
   </style>
@@ -1188,22 +1384,23 @@
         <button class="announcement-close" id="announcementClose" type="button" aria-label="Đóng thông báo"><svg class="icon icon-sm"><use href="#i-x"></use></svg></button>
       </section>
 
+
       <section class="card composer composer-post-panel" id="composerCard" aria-labelledby="composerTitle">
         <div class="composer-closed composer-post-entry" id="composerOpen" role="button" tabindex="0" aria-expanded="false">
-          <div class="avatar composer-compact-avatar" id="composerAvatar">AD</div>
-          <div class="composer-placeholder composer-post-placeholder">
-            <strong id="composerTitle">Đăng bài lên cộng đồng</strong>
-            <span>Hỏi bài, xin lời giải hoặc chia sẻ một mẹo học tập...</span>
+          <div class="composer-facebook-top">
+            <div class="avatar composer-compact-avatar" id="composerAvatar">AD</div>
+            <div class="composer-facebook-input" id="composerTitle">Bạn đang nghĩ gì?</div>
           </div>
-          <button class="composer-trigger composer-post-trigger" type="button" tabindex="-1" aria-label="Mở ô đăng bài">
-            <svg class="icon icon-sm"><use href="#i-message"></use></svg>
-            <span>Viết bài</span>
-          </button>
+          <div class="composer-facebook-actions" aria-label="Gợi ý nội dung bài viết">
+            <span class="composer-facebook-action"><svg class="icon icon-sm"><use href="#i-book"></use></svg>Hỏi bài</span>
+            <span class="composer-facebook-action"><svg class="icon icon-sm"><use href="#i-spark"></use></svg>Chia sẻ mẹo</span>
+            <span class="composer-facebook-action"><svg class="icon icon-sm"><use href="#i-message"></use></svg>Xin góp ý</span>
+          </div>
         </div>
 
         <form class="composer-form" id="postForm">
-          <label class="composer-textarea-label" for="postContent">Nội dung bài viết</label>
-          <textarea id="postContent" maxlength="1500" placeholder="Ví dụ: Mình chưa hiểu câu Toán này, mọi người có thể hướng dẫn giúp không?" aria-label="Nội dung bài viết"></textarea>
+          <label class="composer-textarea-label" for="postContent">Tạo bài viết</label>
+          <textarea id="postContent" maxlength="1500" placeholder="Hỏi bài, chia sẻ kinh nghiệm hoặc viết điều bạn đang suy nghĩ..." aria-label="Nội dung bài viết"></textarea>
           <div class="composer-footer">
             <div class="composer-meta">
               <label class="check-row"><input type="checkbox" id="agreeRule"> Tôi đồng ý với nội quy cộng đồng</label>
@@ -1214,11 +1411,18 @@
         </form>
       </section>
 
+
       <section class="study-mobile-entry" id="studyMobileEntry" aria-label="Mở phòng tự học">
-        <div class="study-mobile-copy">
-          <div class="study-mobile-eyebrow"><i class="live-dot"></i><span id="studyCountMobile">0</span> người đang học</div>
-          <strong>Phòng tự học chung</strong>
-          <span><b id="studyTimerMobile">25:00</b> · <span id="studyPhaseMobile">Tập trung</span></span>
+        <div class="study-mobile-main">
+          <div class="study-mobile-copy">
+            <div class="study-mobile-eyebrow"><i class="live-dot"></i><span id="studyCountMobile">0</span> người đang học</div>
+            <strong>Phòng tự học</strong>
+            <span><b id="studyTimerMobile">25:00</b> · <span id="studyPhaseMobile">Tập trung</span></span>
+          </div>
+          <div class="study-participant-preview study-mobile-participants">
+            <div class="study-participant-avatars" id="studyParticipantAvatarsMobile" aria-hidden="true"></div>
+            <span class="study-participant-names" id="studyParticipantNamesMobile">Chưa có ai trong phòng</span>
+          </div>
         </div>
         <button class="study-mobile-button" id="studyRoomShortcutMobile" type="button">
           <svg class="icon icon-sm"><use href="#i-users"></use></svg>
@@ -1244,21 +1448,24 @@
     </section>
 
     <aside class="sidebar right-sidebar" aria-label="Thông tin phòng học">
+
       <section class="study-side-card" id="studySideCard" aria-labelledby="studySideTitle">
         <div class="study-side-card-head">
-          <span class="study-side-card-title" id="studySideTitle">Vào phòng tự học</span>
+          <span class="study-side-card-title" id="studySideTitle">Phòng tự học</span>
           <span class="study-side-card-icon"><svg class="icon"><use href="#i-book"></use></svg></span>
         </div>
-        <p>Cùng học theo nhịp Pomodoro 25/5 và theo dõi mục tiêu của mọi người.</p>
-        <div class="study-side-metrics">
-          <div class="study-side-metric"><div class="study-side-value" id="studyTimerSide">25:00</div><div class="study-side-label" id="studyPhaseSide">Tập trung</div></div>
-          <div class="study-side-metric"><div class="study-side-value" id="studyCountSideCard">0</div><div class="study-side-label">đang trong phòng</div></div>
+        <div class="study-side-summary">
+          <div class="study-side-summary-item"><strong id="studyTimerSide">25:00</strong><span id="studyPhaseSide">Tập trung</span></div>
+          <div class="study-side-summary-item"><strong id="studyCountSideCard">0</strong><span>người đang học</span></div>
+        </div>
+        <div class="study-participant-preview">
+          <div class="study-participant-avatars" id="studyParticipantAvatarsSide" aria-hidden="true"></div>
+          <span class="study-participant-names" id="studyParticipantNamesSide">Chưa có ai trong phòng</span>
         </div>
         <button class="study-side-join" id="studyRoomShortcut" type="button">
           <svg class="icon icon-sm"><use href="#i-users"></use></svg>
-          <span id="studyRoomShortcutLabel">Tham gia phòng</span>
+          <span id="studyRoomShortcutLabel">Tham gia</span>
         </button>
-        <div class="study-side-session" id="studySideSession" aria-live="polite">Phòng học sẽ mở trong một không gian tập trung riêng.</div>
       </section>
 
       <section class="panel">
@@ -1296,7 +1503,7 @@
               <h1 class="study-room-title" id="studyRoomTitle">Học cùng nhau, tập trung tốt hơn.</h1>
               <p class="study-room-subtitle">Mọi người dùng chung nhịp 25 phút tập trung và 5 phút nghỉ. Phần trò chuyện giới hạn mỗi người một tin nhắn trong 90 giây để tránh xao nhãng.</p>
             </div>
-            <button class="study-live-pill" id="studyMembersToggle" type="button" aria-expanded="false" aria-controls="studyMembersModal" title="Xem những người đang học">
+            <button class="study-live-pill" id="studyMembersToggle" type="button" aria-expanded="false" aria-controls="studyMembersPanel" title="Đi tới danh sách người đang học">
               <i class="live-dot"></i><strong id="studyOnlineCount">0</strong> người đang học
             </button>
           </div>
@@ -1377,6 +1584,19 @@
         </div>
 
         <div class="study-room-body">
+          <aside class="study-members-panel" id="studyMembersPanel" aria-labelledby="studyMembersInlineTitle">
+            <div class="study-members-panel-head">
+              <div>
+                <div class="study-members-title" id="studyMembersInlineTitle"><svg class="icon icon-sm"><use href="#i-users"></use></svg>Mọi người đang học</div>
+                <div class="study-members-note"><span id="studyCompletedCount">0</span> đã hoàn thành · <span id="studySubjectCount">0</span> môn đang học</div>
+              </div>
+              <span class="study-members-count"><i class="live-dot"></i><strong id="studyMembersPanelCount">0</strong></span>
+            </div>
+            <div class="study-members" id="studyMembers" aria-live="polite">
+              <div class="study-empty">Chưa có ai trong phòng. Hãy là người bắt đầu phiên học đầu tiên.</div>
+            </div>
+          </aside>
+
           <section class="study-chat" aria-labelledby="studyChatTitle">
             <div class="study-chat-head">
               <div>
@@ -1403,23 +1623,6 @@
           </section>
         </div>
       </section>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" id="studyMembersModal" role="dialog" aria-modal="true" aria-labelledby="studyMembersTitle">
-    <div class="modal study-members-modal">
-      <div class="modal-head">
-        <div>
-          <div class="modal-title" id="studyMembersTitle">Mọi người đang học</div>
-          <div class="study-members-note"><span id="studyCompletedCount">0</span> đã hoàn thành · <span id="studySubjectCount">0</span> môn đang học</div>
-        </div>
-        <button class="modal-close" id="studyMembersClose" type="button" aria-label="Đóng danh sách người học"><svg class="icon"><use href="#i-x"></use></svg></button>
-      </div>
-      <div class="modal-body study-members-modal-body">
-        <div class="study-members" id="studyMembers" aria-live="polite">
-          <div class="study-empty">Chưa có ai trong phòng. Hãy là người bắt đầu phiên học đầu tiên.</div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1477,8 +1680,8 @@
       studyRoomModal: $('#studyRoomModal'),
       studyRoomClose: $('#studyRoomClose'),
       studyMembersToggle: $('#studyMembersToggle'),
-      studyMembersModal: $('#studyMembersModal'),
-      studyMembersClose: $('#studyMembersClose'),
+      studyMembersPanel: $('#studyMembersPanel'),
+      studyMembersPanelCount: $('#studyMembersPanelCount'),
       studyJoinForm: $('#studyJoinForm'),
       studySubject: $('#studySubject'),
       studyGrade: $('#studyGrade'),
@@ -1506,6 +1709,10 @@
       studyRoomShortcutMobileLabel: $('#studyRoomShortcutMobileLabel'),
       studySideCard: $('#studySideCard'),
       studySideSession: $('#studySideSession'),
+      studyParticipantAvatarsSide: $('#studyParticipantAvatarsSide'),
+      studyParticipantNamesSide: $('#studyParticipantNamesSide'),
+      studyParticipantAvatarsMobile: $('#studyParticipantAvatarsMobile'),
+      studyParticipantNamesMobile: $('#studyParticipantNamesMobile'),
       studyCountMobile: $('#studyCountMobile'),
       studyTimerMobile: $('#studyTimerMobile'),
       studyPhaseMobile: $('#studyPhaseMobile'),
@@ -2397,7 +2604,7 @@
       if (label) label.textContent = joined ? 'Cập nhật mục tiêu' : 'Tham gia học cùng';
       const icon = $('use', el.studyJoinButton);
       if (icon) icon.setAttribute('href', joined ? '#i-check' : '#i-users');
-      if (el.studyRoomShortcutLabel) el.studyRoomShortcutLabel.textContent = joined ? 'Quay lại phòng' : 'Tham gia phòng';
+      if (el.studyRoomShortcutLabel) el.studyRoomShortcutLabel.textContent = joined ? 'Quay lại' : 'Tham gia';
       if (el.studyRoomShortcutMobileLabel) el.studyRoomShortcutMobileLabel.textContent = joined ? 'Quay lại' : 'Tham gia';
       if (el.studySideCard) el.studySideCard.classList.toggle('joined', joined);
       if (el.studySideSession) el.studySideSession.textContent = joined ? 'Phiên học của bạn vẫn tiếp tục khi thu nhỏ phòng.' : 'Phòng học sẽ mở trong một không gian tập trung riêng.';
@@ -2475,6 +2682,44 @@
       }
     }
 
+
+    function renderStudyMemberPreviews(members) {
+      const targets = [
+        { avatars: el.studyParticipantAvatarsSide, names: el.studyParticipantNamesSide },
+        { avatars: el.studyParticipantAvatarsMobile, names: el.studyParticipantNamesMobile }
+      ];
+
+      const shortName = value => {
+        const cleaned = String(value || 'Thành viên ẩn danh').replace(/^Ẩn danh\s*/i, '').trim();
+        return cleaned || 'Thành viên ẩn danh';
+      };
+
+      targets.forEach(target => {
+        if (!target.avatars || !target.names) return;
+        target.avatars.innerHTML = '';
+
+        if (!members.length) {
+          target.names.textContent = 'Chưa có ai trong phòng';
+          return;
+        }
+
+        members.slice(0, 4).forEach(member => {
+          const avatar = document.createElement('span');
+          avatar.className = 'study-preview-avatar';
+          avatar.textContent = avatarLetters(member.name || 'Ẩn danh');
+          avatar.style.background = avatarGradient(member.userId || member.id);
+          avatar.title = `${member.name || 'Thành viên ẩn danh'} · ${member.grade || 'Chưa chọn lớp'} · ${member.subject || 'Đang học'}`;
+          target.avatars.appendChild(avatar);
+        });
+
+        const visibleNames = members.slice(0, 2).map(member => shortName(member.name));
+        const remaining = members.length - visibleNames.length;
+        target.names.textContent = remaining > 0
+          ? `${visibleNames.join(', ')} và ${remaining} người khác`
+          : visibleNames.join(', ');
+      });
+    }
+
     function renderStudyMembers() {
       if (!el.studyMembers) return;
       const members = Array.from(state.studyMembers.entries()).map(([id, value]) => ({ id, ...(value || {}) }));
@@ -2486,7 +2731,8 @@
       });
 
       const count = members.length;
-      [el.studyOnlineCount, el.studyCountSide, el.studyCountSideCard, el.studyCountMobile].forEach(node => { if (node) node.textContent = String(count); });
+      [el.studyOnlineCount, el.studyCountSide, el.studyCountSideCard, el.studyCountMobile, el.studyMembersPanelCount].forEach(node => { if (node) node.textContent = String(count); });
+      renderStudyMemberPreviews(members);
       if (el.studyCompletedCount) el.studyCompletedCount.textContent = String(members.filter(member => member.completed).length);
       if (el.studySubjectCount) el.studySubjectCount.textContent = String(new Set(members.map(member => member.subject).filter(Boolean)).size);
 
@@ -2515,9 +2761,24 @@
         const name = document.createElement('div');
         name.className = 'study-member-name';
         name.textContent = own ? `${member.name || identity.name} · Bạn` : (member.name || 'Thành viên ẩn danh');
-        const detail = document.createElement('div');
-        detail.className = 'study-member-detail';
-        detail.textContent = `${member.subject || 'Đang học'} · ${member.grade || ''} · ${member.goal || 'Chưa đặt mục tiêu'}`;
+        const tags = document.createElement('div');
+        tags.className = 'study-member-tags';
+        const subjectTag = document.createElement('span');
+        subjectTag.className = 'study-member-tag';
+        subjectTag.textContent = member.subject || 'Đang học';
+        const gradeTag = document.createElement('span');
+        gradeTag.className = 'study-member-tag';
+        gradeTag.textContent = member.grade || 'Chưa chọn lớp';
+        tags.append(subjectTag, gradeTag);
+
+        const goal = document.createElement('div');
+        goal.className = 'study-member-goal';
+        const goalLabel = document.createElement('strong');
+        goalLabel.textContent = 'Mục tiêu: ';
+        const goalText = document.createElement('span');
+        goalText.textContent = member.goal || 'Chưa đặt mục tiêu';
+        goal.append(goalLabel, goalText);
+
         const meta = document.createElement('div');
         meta.className = 'study-member-meta';
         const dot = document.createElement('i');
@@ -2525,7 +2786,7 @@
         const status = document.createElement('span');
         status.textContent = member.completed ? 'Đã hoàn thành' : `${joinedMinutes} phút trong phòng`;
         meta.append(dot, status);
-        main.append(name, detail, meta);
+        main.append(name, tags, goal, meta);
         card.append(avatar, main);
         el.studyMembers.appendChild(card);
       });
@@ -2534,7 +2795,6 @@
     function updatePageScrollLock() {
       const locked = Boolean(
         (el.studyRoomModal && el.studyRoomModal.classList.contains('show')) ||
-        (el.studyMembersModal && el.studyMembersModal.classList.contains('show')) ||
         (el.reportModal && el.reportModal.classList.contains('show'))
       );
       el.body.classList.toggle('no-scroll', locked);
@@ -2560,17 +2820,16 @@
     }
 
     function openStudyMembers() {
-      if (!el.studyMembersModal) return;
-      el.studyMembersModal.classList.add('show');
-      el.studyMembersToggle.setAttribute('aria-expanded', 'true');
-      updatePageScrollLock();
-    }
-
-    function closeStudyMembers() {
-      if (!el.studyMembersModal) return;
-      el.studyMembersModal.classList.remove('show');
-      el.studyMembersToggle.setAttribute('aria-expanded', 'false');
-      updatePageScrollLock();
+      if (!el.studyMembersPanel) return;
+      if (el.studyMembersToggle) el.studyMembersToggle.setAttribute('aria-expanded', 'true');
+      el.studyMembersPanel.classList.remove('spotlight');
+      void el.studyMembersPanel.offsetWidth;
+      el.studyMembersPanel.classList.add('spotlight');
+      el.studyMembersPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      window.setTimeout(() => {
+        el.studyMembersPanel.classList.remove('spotlight');
+        if (el.studyMembersToggle) el.studyMembersToggle.setAttribute('aria-expanded', 'false');
+      }, 1200);
     }
 
     function getStudyChatLastAt() {
@@ -2837,8 +3096,6 @@
       el.studyCompleteButton.addEventListener('click', toggleStudyComplete);
       el.studySoundToggle.addEventListener('click', toggleStudySound);
       el.studyMembersToggle.addEventListener('click', openStudyMembers);
-      el.studyMembersClose.addEventListener('click', closeStudyMembers);
-      el.studyMembersModal.addEventListener('click', event => { if (event.target === el.studyMembersModal) closeStudyMembers(); });
       el.studyChatForm.addEventListener('submit', submitStudyChat);
       el.studyChatInput.addEventListener('input', () => {
         el.studyChatCharCount.textContent = String(el.studyChatInput.value.length);
@@ -2855,8 +3112,7 @@
       el.reportModal.addEventListener('click', event => { if (event.target === el.reportModal) closeReport(); });
       document.addEventListener('keydown', event => {
         if (event.key !== 'Escape') return;
-        if (el.studyMembersModal.classList.contains('show')) closeStudyMembers();
-        else if (el.reportModal.classList.contains('show')) closeReport();
+        if (el.reportModal.classList.contains('show')) closeReport();
         else if (el.studyRoomModal.classList.contains('show')) closeStudyRoomModal();
       });
     }
