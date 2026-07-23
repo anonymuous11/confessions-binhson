@@ -879,98 +879,52 @@
     }
 
 
-    /* Ô đăng bài nổi bật và dễ nhận biết */
+    /* Ô đăng bài gọn, rõ ràng và dễ nhận biết */
     .composer-post-panel {
       position: relative;
-      border: 1px solid color-mix(in srgb, var(--primary) 38%, var(--line));
-      background:
-        linear-gradient(135deg, color-mix(in srgb, var(--primary-soft) 62%, var(--surface)) 0%, var(--surface) 54%, color-mix(in srgb, var(--cyan) 5%, var(--surface)) 100%);
-      box-shadow:
-        0 18px 46px rgba(88, 72, 232, .14),
-        inset 0 1px 0 rgba(255, 255, 255, .05);
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--line));
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
     }
     .composer-post-panel::after {
       content: "";
       position: absolute;
       top: 0;
-      left: 20px;
-      right: 20px;
-      height: 3px;
+      left: 16px;
+      right: 16px;
+      height: 2px;
       border-radius: 0 0 999px 999px;
       background: linear-gradient(90deg, var(--primary), #8b7cff, var(--cyan));
       pointer-events: none;
     }
-    .composer-post-header {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 18px 17px 9px;
-    }
-    .composer-post-icon {
-      width: 40px;
-      height: 40px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 13px;
-      color: white;
-      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-      box-shadow: 0 10px 24px rgba(109, 93, 252, .25);
-    }
-    .composer-post-heading { min-width: 0; flex: 1; }
-    .composer-post-title-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .composer-post-title-row h2 {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.25;
-      font-weight: 900;
-      letter-spacing: -.025em;
-    }
-    .composer-post-heading p {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.45;
-    }
-    .composer-post-badge {
-      padding: 4px 8px;
-      border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--line));
-      border-radius: 999px;
-      color: var(--primary);
-      background: var(--primary-soft);
-      font-size: 9px;
-      font-weight: 850;
-      white-space: nowrap;
-    }
     .composer-post-entry {
       position: relative;
       z-index: 1;
-      margin: 0 14px 14px;
-      padding: 11px;
-      border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
-      border-radius: 17px;
-      background: color-mix(in srgb, var(--surface-2) 88%, transparent);
-      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+      margin: 0;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
+      transition: background .18s ease;
     }
     .composer-post-entry:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--primary) 48%, var(--line));
-      background: color-mix(in srgb, var(--primary-soft) 40%, var(--surface-2));
-      box-shadow: 0 9px 24px rgba(88, 72, 232, .09);
+      background: color-mix(in srgb, var(--primary-soft) 32%, transparent);
+    }
+    .composer-compact-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
     }
     .composer-post-placeholder {
-      min-height: 44px;
-      padding: 5px 7px;
+      min-width: 0;
+      flex: 1;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       gap: 2px;
       border: 0 !important;
       background: transparent !important;
@@ -978,26 +932,30 @@
     .composer-post-placeholder strong {
       color: var(--text);
       font-size: 13px;
-      font-weight: 820;
+      line-height: 1.25;
+      font-weight: 850;
     }
     .composer-post-placeholder span {
+      overflow: hidden;
       color: var(--muted);
       font-size: 10px;
       line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .composer-post-trigger {
       width: auto;
-      min-width: 105px;
-      height: 42px;
-      padding: 0 14px;
+      min-width: 96px;
+      height: 38px;
+      padding: 0 13px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 7px;
-      border-radius: 13px;
+      border-radius: 12px;
       color: white;
       background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-      box-shadow: 0 9px 22px rgba(109, 93, 252, .25);
+      box-shadow: 0 8px 19px rgba(109, 93, 252, .2);
       font-size: 11px;
       font-weight: 850;
       white-space: nowrap;
@@ -1006,9 +964,10 @@
     .composer-post-panel .composer-form {
       position: relative;
       z-index: 1;
-      padding: 0 14px 15px;
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--line);
     }
-    .composer-post-panel .composer-divider { margin-bottom: 12px; }
+    .composer-post-panel .composer-divider { display: none; }
     .composer-textarea-label {
       display: block;
       margin: 0 0 7px 2px;
@@ -1017,34 +976,31 @@
       font-weight: 820;
     }
     .composer-post-panel textarea {
-      min-height: 145px;
-      border-color: color-mix(in srgb, var(--primary) 20%, var(--line));
-      background: var(--surface-solid);
+      min-height: 108px;
+      border-color: color-mix(in srgb, var(--primary) 18%, var(--line));
+      background: var(--surface-2);
     }
     .composer-submit-btn {
-      min-width: 186px;
+      min-width: 126px;
       font-size: 11px;
     }
 
     @media (max-width: 520px) {
-      .composer-post-header { padding: 16px 14px 8px; }
-      .composer-post-icon { width: 36px; height: 36px; border-radius: 12px; }
-      .composer-post-title-row h2 { font-size: 14px; }
-      .composer-post-heading p { display: none; }
-      .composer-post-badge { font-size: 8px; }
-      .composer-post-entry { margin: 0 10px 10px; padding: 9px; gap: 8px; }
+      .composer-post-entry { padding: 11px 11px; gap: 9px; }
+      .composer-compact-avatar { width: 36px; height: 36px; border-radius: 12px; }
       .composer-post-placeholder strong { font-size: 12px; }
-      .composer-post-placeholder span { display: none; }
+      .composer-post-placeholder span { font-size: 9px; }
       .composer-post-trigger {
-        min-width: 43px;
-        width: 43px;
-        padding: 0;
+        min-width: 76px;
+        width: auto;
+        height: 36px;
+        padding: 0 10px;
       }
-      .composer-post-trigger span { display: none; }
-      .composer-post-panel .composer-form { padding: 0 10px 12px; }
+      .composer-post-trigger span { display: inline; }
+      .composer-post-panel .composer-form { padding: 11px 10px 12px; }
+      .composer-post-panel textarea { min-height: 98px; }
       .composer-submit-btn { min-width: 0; width: 100%; }
     }
-
 
 
     /* Phòng học mở trong lớp phủ tập trung */
@@ -1232,34 +1188,20 @@
         <button class="announcement-close" id="announcementClose" type="button" aria-label="Đóng thông báo"><svg class="icon icon-sm"><use href="#i-x"></use></svg></button>
       </section>
 
-      <section class="card composer open composer-featured composer-post-panel" id="composerCard" aria-labelledby="composerTitle">
-        <div class="composer-post-header">
-          <div class="composer-post-icon" aria-hidden="true">
-            <svg class="icon"><use href="#i-message"></use></svg>
-          </div>
-          <div class="composer-post-heading">
-            <div class="composer-post-title-row">
-              <h2 id="composerTitle">Đăng bài lên cộng đồng</h2>
-              <span class="composer-post-badge">Bài viết mới</span>
-            </div>
-            <p>Hỏi bài, xin lời giải hoặc chia sẻ mẹo học tập với mọi người.</p>
-          </div>
-        </div>
-
-        <div class="composer-closed composer-post-entry" id="composerOpen" role="button" tabindex="0" aria-expanded="true">
-          <div class="avatar" id="composerAvatar">AD</div>
+      <section class="card composer composer-post-panel" id="composerCard" aria-labelledby="composerTitle">
+        <div class="composer-closed composer-post-entry" id="composerOpen" role="button" tabindex="0" aria-expanded="false">
+          <div class="avatar composer-compact-avatar" id="composerAvatar">AD</div>
           <div class="composer-placeholder composer-post-placeholder">
-            <strong>Bạn muốn đăng nội dung gì?</strong>
-            <span>Nhấn vào đây để viết câu hỏi hoặc chia sẻ bài học...</span>
+            <strong id="composerTitle">Đăng bài lên cộng đồng</strong>
+            <span>Hỏi bài, xin lời giải hoặc chia sẻ một mẹo học tập...</span>
           </div>
           <button class="composer-trigger composer-post-trigger" type="button" tabindex="-1" aria-label="Mở ô đăng bài">
-            <svg class="icon icon-sm"><use href="#i-spark"></use></svg>
+            <svg class="icon icon-sm"><use href="#i-message"></use></svg>
             <span>Viết bài</span>
           </button>
         </div>
 
         <form class="composer-form" id="postForm">
-          <div class="composer-divider"></div>
           <label class="composer-textarea-label" for="postContent">Nội dung bài viết</label>
           <textarea id="postContent" maxlength="1500" placeholder="Ví dụ: Mình chưa hiểu câu Toán này, mọi người có thể hướng dẫn giúp không?" aria-label="Nội dung bài viết"></textarea>
           <div class="composer-footer">
@@ -1267,7 +1209,7 @@
               <label class="check-row"><input type="checkbox" id="agreeRule"> Tôi đồng ý với nội quy cộng đồng</label>
               <span class="char-count"><span id="postCharCount">0</span>/1500 ký tự</span>
             </div>
-            <button class="primary-btn composer-submit-btn" id="postSubmit" type="submit"><svg class="icon icon-sm"><use href="#i-send"></use></svg>Đăng bài lên cộng đồng</button>
+            <button class="primary-btn composer-submit-btn" id="postSubmit" type="submit"><svg class="icon icon-sm"><use href="#i-send"></use></svg>Đăng bài</button>
           </div>
         </form>
       </section>
