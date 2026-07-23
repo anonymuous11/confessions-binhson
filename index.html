@@ -177,6 +177,24 @@
       gap: 10px;
       flex: 0 0 auto;
     }
+    .online-pill {
+      min-height: 46px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 6px 18px rgba(31, 35, 58, .05);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .online-pill strong { color: var(--text); font-size: 12px; font-weight: 900; }
+    .online-pill .live-dot { width: 7px; height: 7px; box-shadow: 0 0 0 4px var(--success-soft); }
     .identity-pill {
       min-height: 46px;
       display: flex;
@@ -740,6 +758,37 @@
     .study-chat-bubble { padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px 14px 14px 14px; background: var(--surface-solid); color: var(--text); font-size: 11px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: 0 5px 16px rgba(31,35,58,.04); }
     .study-chat-message.own .study-chat-bubble { border-color: transparent; border-radius: 14px 5px 14px 14px; color: white; background: linear-gradient(135deg, var(--primary), var(--primary-strong)); }
     .study-chat-time { margin-top: 3px; color: var(--subtle); font-size: 7px; text-align: right; }
+    .study-chat-day-divider {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 4px 0 2px;
+      color: var(--subtle);
+      font-size: 8px;
+      font-weight: 850;
+      text-align: center;
+    }
+    .study-chat-day-divider::before,
+    .study-chat-day-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+    .study-chat-day-divider span {
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-solid);
+      white-space: nowrap;
+    }
+    .study-chat-day-divider.is-old span { color: var(--warning); background: var(--warning-soft); }
+    .study-chat-message.is-old { opacity: .84; }
+    .study-chat-message.is-old .study-chat-bubble { box-shadow: none; }
+    .study-chat-old-badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      color: var(--warning);
+      background: var(--warning-soft);
+      font-size: 7px;
+      font-weight: 900;
+    }
     .study-chat-form { padding: 11px 12px 10px; border-top: 1px solid var(--line); background: var(--surface-solid); }
     .study-chat-compose { display: flex; align-items: flex-end; gap: 8px; }
     .study-chat-compose textarea {
@@ -1300,6 +1349,17 @@
       .study-chat { min-height: 500px; }
     }
 
+
+    @media (max-width: 620px) {
+      .online-pill { min-width: 42px; padding: 0 9px; }
+      .online-pill span { font-size: 0; }
+      .online-pill strong { font-size: 11px; }
+      .online-pill strong::after { content: " online"; font-size: 0; }
+    }
+    @media (max-width: 430px) {
+      .online-pill { width: 42px; padding: 0; gap: 5px; }
+      .online-pill .live-dot { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -1338,6 +1398,10 @@
       </a>
 
       <div class="header-actions">
+        <div class="online-pill" title="Số người đang online trên website" aria-label="Số người đang online">
+          <i class="live-dot"></i>
+          <span><strong id="onlineCountHeader">0</strong> người online</span>
+        </div>
         <div class="identity-pill" title="Danh tính ẩn danh được lưu trên thiết bị này">
           <div class="identity-avatar" id="headerAvatar">AD</div>
           <div class="identity-text">
@@ -1501,7 +1565,7 @@
             <div>
               <div class="study-eyebrow"><svg class="icon icon-sm"><use href="#i-book"></use></svg>Phòng tự học thời gian thực</div>
               <h1 class="study-room-title" id="studyRoomTitle">Học cùng nhau, tập trung tốt hơn.</h1>
-              <p class="study-room-subtitle">Mọi người dùng chung nhịp 25 phút tập trung và 5 phút nghỉ. Phần trò chuyện giới hạn mỗi người một tin nhắn trong 90 giây để tránh xao nhãng.</p>
+              <p class="study-room-subtitle">Mọi người dùng chung nhịp 25 phút tập trung và 5 phút nghỉ. Phần trò chuyện giới hạn mỗi người một tin nhắn trong 45 giây để tránh xao nhãng.</p>
             </div>
             <button class="study-live-pill" id="studyMembersToggle" type="button" aria-expanded="false" aria-controls="studyMembersPanel" title="Đi tới danh sách người đang học">
               <i class="live-dot"></i><strong id="studyOnlineCount">0</strong> người đang học
@@ -1601,9 +1665,9 @@
             <div class="study-chat-head">
               <div>
                 <div class="study-chat-title" id="studyChatTitle"><svg class="icon icon-sm"><use href="#i-message"></use></svg>Trao đổi nhanh trong phòng học</div>
-                <div class="study-chat-note">Tin nhắn hiển thị danh tính ẩn danh, khối/lớp và mục tiêu học tập. Mỗi người gửi tối đa 1 tin/90 giây.</div>
+                <div class="study-chat-note">Tin nhắn hiển thị danh tính ẩn danh, khối/lớp và mục tiêu học tập. Mỗi người gửi tối đa 1 tin/45 giây. Tin nhắn vẫn được lưu trong phòng.</div>
               </div>
-              <span class="study-chat-slow-badge">Chế độ chậm 90s</span>
+              <span class="study-chat-slow-badge">Chế độ chậm 45s</span>
             </div>
             <div class="study-chat-messages" id="studyChatMessages" aria-live="polite">
               <div class="study-chat-empty">Chưa có tin nhắn. Hãy tham gia phòng và gửi lời chào đầu tiên.</div>
@@ -1674,7 +1738,7 @@
       announcementContent: $('#announcementContent'),
       announcementTime: $('#announcementTime'),
       announcementClose: $('#announcementClose'),
-      onlineCounts: [$('#onlineCountSide')],
+      onlineCounts: [$('#onlineCountSide'), $('#onlineCountHeader')],
       postCountSide: $('#postCountSide'),
       studyRoom: $('#studyRoom'),
       studyRoomModal: $('#studyRoomModal'),
@@ -1773,10 +1837,12 @@
       connected: db.ref('.info/connected'),
       serverTimeOffset: db.ref('.info/serverTimeOffset'),
       studyMembers: db.ref('study_rooms/general/members'),
-      studyChat: db.ref('study_rooms/general/chat')
+      // Chỉ đọc dữ liệu chat cũ để không mất lịch sử đã có.
+      studyChatLegacy: db.ref('study_rooms/general/chat')
     };
     const postsQuery = refs.posts.orderByChild('timestamp').limitToLast(20000);
-    const studyChatQuery = refs.studyChat.orderByChild('timestamp').limitToLast(100);
+    const studyChatLegacyQuery = refs.studyChatLegacy.orderByChild('timestamp').limitToLast(300);
+    const STUDY_CHAT_PREFIX = '[[BINHSON_STUDY_CHAT_V3]]';
 
     const state = {
       posts: new Map(),
@@ -1798,14 +1864,14 @@
       serverOffset: 0,
       soundEnabled: false,
       lastMemberRender: 0,
-      studyChatMessages: [],
+      studyChatMessages: new Map(),
       studyChatCooldownTimer: null
     };
 
     const limits = {
       post: { max: 1500, cooldown: 15000 },
       comment: { max: 500, cooldown: 4000 },
-      studyChat: { max: 500, cooldown: 90000 },
+      studyChat: { max: 500, cooldown: 45000 },
       report: { max: 500, cooldown: 10000 }
     };
 
@@ -2226,6 +2292,89 @@
       }
     }
 
+    function isStudyChatRecord(value) {
+      return Boolean(
+        value &&
+        typeof value.content === 'string' &&
+        value.content.startsWith(STUDY_CHAT_PREFIX)
+      );
+    }
+
+    function parseStudyChatRecord(id, value, source = 'current') {
+      if (!value || typeof value !== 'object') return null;
+
+      if (source === 'legacy') {
+        const legacyText = normalizeText(value.text, limits.studyChat.max);
+        if (!legacyText) return null;
+        return {
+          id: `legacy:${id}`,
+          sessionId: String(value.sessionId || ''),
+          userId: String(value.userId || ''),
+          name: String(value.name || 'Thành viên ẩn danh').slice(0, 80),
+          subject: String(value.subject || '').slice(0, 50),
+          grade: String(value.grade || '').slice(0, 50),
+          goal: String(value.goal || '').slice(0, 150),
+          text: legacyText,
+          timestamp: numberTimestamp(value.timestamp),
+          source: 'legacy'
+        };
+      }
+
+      if (!isStudyChatRecord(value)) return null;
+      const encoded = value.content.slice(STUDY_CHAT_PREFIX.length);
+      let payload;
+      try {
+        payload = JSON.parse(encoded);
+      } catch (_) {
+        payload = { text: encoded };
+      }
+
+      const chatText = normalizeText(payload.text, limits.studyChat.max);
+      if (!chatText) return null;
+
+      return {
+        id,
+        sessionId: String(payload.sessionId || ''),
+        userId: String(value.authorId || payload.userId || ''),
+        name: String(value.authorName || payload.name || 'Thành viên ẩn danh').slice(0, 80),
+        subject: String(payload.subject || '').slice(0, 50),
+        grade: String(payload.grade || '').slice(0, 50),
+        goal: String(payload.goal || '').slice(0, 150),
+        text: chatText,
+        timestamp: numberTimestamp(value.timestamp),
+        source: 'current'
+      };
+    }
+
+    function upsertStudyChatRecord(id, value, source = 'current') {
+      const parsed = parseStudyChatRecord(id, value, source);
+      if (!parsed) return false;
+      state.studyChatMessages.set(parsed.id, parsed);
+      renderStudyChat();
+      return true;
+    }
+
+    function removeStudyChatRecord(id, source = 'current') {
+      const key = source === 'legacy' ? `legacy:${id}` : id;
+      const removed = state.studyChatMessages.delete(key);
+      if (removed) renderStudyChat();
+      return removed;
+    }
+
+    function chatDayStart(timestamp) {
+      const date = new Date(numberTimestamp(timestamp));
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    }
+
+    function formatChatDayLabel(timestamp) {
+      const day = chatDayStart(timestamp);
+      const today = chatDayStart(Date.now());
+      const oneDay = 86400000;
+      if (day === today) return 'Hôm nay';
+      if (day === today - oneDay) return 'Hôm qua · Tin nhắn cũ';
+      return `${new Date(day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })} · Tin nhắn cũ`;
+    }
+
     function initPosts() {
       const onError = error => {
         state.postsLoaded = true;
@@ -2234,14 +2383,27 @@
       };
 
       postsQuery.on('child_added', snapshot => {
-        state.posts.set(snapshot.key, snapshot.val() || {});
+        const value = snapshot.val() || {};
+        if (upsertStudyChatRecord(snapshot.key, value)) return;
+        state.posts.set(snapshot.key, value);
         scheduleFeedRender();
       }, onError);
       postsQuery.on('child_changed', snapshot => {
-        state.posts.set(snapshot.key, snapshot.val() || {});
+        const value = snapshot.val() || {};
+        if (upsertStudyChatRecord(snapshot.key, value)) {
+          state.posts.delete(snapshot.key);
+          const oldCard = state.cards.get(snapshot.key);
+          if (oldCard) oldCard.remove();
+          state.cards.delete(snapshot.key);
+          scheduleFeedRender();
+          return;
+        }
+        removeStudyChatRecord(snapshot.key);
+        state.posts.set(snapshot.key, value);
         scheduleFeedRender();
       }, onError);
       postsQuery.on('child_removed', snapshot => {
+        if (removeStudyChatRecord(snapshot.key)) return;
         state.posts.delete(snapshot.key);
         state.openComments.delete(snapshot.key);
         const card = state.cards.get(snapshot.key);
@@ -2833,8 +2995,19 @@
     }
 
     function getStudyChatLastAt() {
+      const now = studyNow();
       const mine = state.studyMembers.get(presenceSessionId) || {};
-      return Math.max(Number(mine.lastChatAt || 0), Number(local.get('studyChatLastAt') || 0));
+      const candidates = [
+        Number(mine.lastChatAt || 0),
+        Number(local.get('studyChatLastAt') || 0)
+      ].filter(value => Number.isFinite(value) && value > 0);
+      if (!candidates.length) return 0;
+      const latest = Math.max(...candidates);
+      if (latest > now + 10000) {
+        local.remove('studyChatLastAt');
+        return 0;
+      }
+      return latest;
     }
 
     function getStudyChatRemaining() {
@@ -2859,13 +3032,15 @@
         el.studyChatCooldown.textContent = `Bạn có thể gửi tin tiếp theo sau ${seconds} giây.`;
       } else {
         el.studyChatSubmit.disabled = false;
-        el.studyChatCooldown.textContent = 'Sẵn sàng gửi · mỗi người 1 tin/90 giây.';
+        el.studyChatCooldown.textContent = 'Sẵn sàng gửi · mỗi người 1 tin/45 giây. Tin nhắn được lưu.';
       }
     }
 
     function renderStudyChat() {
       if (!el.studyChatMessages) return;
-      const messages = state.studyChatMessages.slice().sort((a, b) => numberTimestamp(a.timestamp) - numberTimestamp(b.timestamp));
+      const messages = Array.from(state.studyChatMessages.values())
+        .sort((a, b) => numberTimestamp(a.timestamp) - numberTimestamp(b.timestamp));
+
       el.studyChatMessages.innerHTML = '';
       if (!messages.length) {
         const empty = document.createElement('div');
@@ -2875,10 +3050,26 @@
         return;
       }
 
+      let lastDay = null;
+      const todayStart = chatDayStart(Date.now());
+
       messages.forEach(message => {
+        const messageDay = chatDayStart(message.timestamp);
+        const isOld = messageDay < todayStart;
+
+        if (messageDay !== lastDay) {
+          const divider = document.createElement('div');
+          divider.className = `study-chat-day-divider${isOld ? ' is-old' : ''}`;
+          const label = document.createElement('span');
+          label.textContent = formatChatDayLabel(message.timestamp);
+          divider.appendChild(label);
+          el.studyChatMessages.appendChild(divider);
+          lastDay = messageDay;
+        }
+
         const own = message.sessionId === presenceSessionId || message.userId === identity.id;
         const row = document.createElement('article');
-        row.className = `study-chat-message${own ? ' own' : ''}`;
+        row.className = `study-chat-message${own ? ' own' : ''}${isOld ? ' is-old' : ''}`;
 
         const avatar = document.createElement('div');
         avatar.className = 'study-chat-avatar';
@@ -2890,13 +3081,22 @@
 
         const author = document.createElement('div');
         author.className = 'study-chat-author';
+
         const name = document.createElement('span');
         name.className = 'study-chat-name';
         name.textContent = own ? `${message.name || identity.name} · Bạn` : (message.name || 'Thành viên ẩn danh');
+
         const grade = document.createElement('span');
         grade.className = 'study-chat-grade';
         grade.textContent = message.grade || 'Chưa rõ lớp';
+
         author.append(name, grade);
+        if (isOld) {
+          const oldBadge = document.createElement('span');
+          oldBadge.className = 'study-chat-old-badge';
+          oldBadge.textContent = 'Tin cũ';
+          author.appendChild(oldBadge);
+        }
 
         const goal = document.createElement('div');
         goal.className = 'study-chat-goal';
@@ -2914,43 +3114,87 @@
         row.append(avatar, main);
         el.studyChatMessages.appendChild(row);
       });
+
       el.studyChatMessages.scrollTop = el.studyChatMessages.scrollHeight;
     }
 
     async function submitStudyChat(event) {
       event.preventDefault();
       if (!state.studyJoined) return toast('Bạn cần tham gia phòng học trước khi trò chuyện.', 'error');
-      const text = normalizeText(el.studyChatInput.value, limits.studyChat.max);
-      if (!text) return toast('Hãy nhập nội dung tin nhắn.', 'error');
+
+      const messageText = normalizeText(el.studyChatInput.value, limits.studyChat.max);
+      if (!messageText) return toast('Hãy nhập nội dung tin nhắn.', 'error');
+
       const remaining = getStudyChatRemaining();
-      if (remaining > 0) return toast(`Vui lòng chờ ${Math.ceil(remaining / 1000)} giây trước khi gửi tin tiếp theo.`, 'error');
+      if (remaining > 0) {
+        return toast(`Vui lòng chờ ${Math.ceil(remaining / 1000)} giây trước khi gửi tin tiếp theo.`, 'error');
+      }
 
       const member = state.studyMembers.get(presenceSessionId) || {};
       const formData = getStudyFormData();
-      const messageRef = refs.studyChat.push();
-      const now = studyNow();
+      const subject = normalizeText(member.subject || formData.subject, 50);
+      const grade = normalizeText(member.grade || formData.grade, 50);
+      const goal = normalizeText(member.goal || formData.goal, 150);
+      const messageRef = refs.posts.push();
+      const messageId = messageRef.key;
+      const sentAt = studyNow();
+
+      const chatPayload = {
+        text: messageText,
+        subject,
+        grade,
+        goal,
+        sessionId: presenceSessionId,
+        userId: identity.id
+      };
+
+      const firebasePayload = {
+        content: `${STUDY_CHAT_PREFIX}${JSON.stringify(chatPayload)}`,
+        timestamp: serverTimestamp,
+        likes: 0,
+        authorId: identity.id,
+        authorName: identity.name
+      };
+
+      // Hiển thị tức thì; nếu Firebase ghi thất bại tin tạm sẽ được xóa.
+      state.studyChatMessages.set(messageId, {
+        id: messageId,
+        sessionId: presenceSessionId,
+        userId: identity.id,
+        name: identity.name,
+        subject,
+        grade,
+        goal,
+        text: messageText,
+        timestamp: sentAt,
+        source: 'optimistic'
+      });
+      renderStudyChat();
       setButtonBusy(el.studyChatSubmit, true, '…');
+
       try {
-        const updates = {};
-        updates[`study_rooms/general/chat/${messageRef.key}`] = {
-          sessionId: presenceSessionId,
-          userId: identity.id,
-          name: identity.name,
-          subject: member.subject || formData.subject,
-          grade: member.grade || formData.grade,
-          goal: member.goal || formData.goal,
-          text,
-          timestamp: serverTimestamp
-        };
-        updates[`study_rooms/general/members/${presenceSessionId}/lastChatAt`] = serverTimestamp;
-        await db.ref().update(updates);
-        local.set('studyChatLastAt', now);
+        // Ghi vào nhánh confessions vì đây là nhánh đăng bài đang hoạt động ổn định.
+        // Bản ghi có tiền tố riêng nên không xuất hiện trong bảng tin.
+        await messageRef.set(firebasePayload);
+
+        // Chỉ bắt đầu khóa 45 giây sau khi máy chủ xác nhận đã lưu tin.
+        local.set('studyChatLastAt', sentAt);
         el.studyChatInput.value = '';
+        el.studyChatInput.style.height = 'auto';
         el.studyChatCharCount.textContent = '0';
-        updateStudyChatComposerUI();
+
+        refs.studyMembers.child(presenceSessionId).update({
+          lastChatAt: serverTimestamp,
+          updatedAt: serverTimestamp
+        }).catch(error => console.warn('Không thể đồng bộ thời gian chat giữa nhiều tab:', error));
+
+        toast('Tin nhắn đã được lưu trong phòng.', 'success', 1800);
       } catch (error) {
-        console.error(error);
-        toast(describeFirebaseError(error, 'Không thể gửi tin nhắn.'), 'error');
+        state.studyChatMessages.delete(messageId);
+        renderStudyChat();
+        local.remove('studyChatLastAt');
+        console.error('Lỗi gửi tin nhắn phòng học:', error);
+        toast(describeFirebaseError(error, 'Không thể gửi tin nhắn. Hãy kiểm tra Firebase Rules hoặc kết nối mạng.'), 'error', 7000);
       } finally {
         setButtonBusy(el.studyChatSubmit, false);
         updateStudyChatComposerUI();
@@ -2997,11 +3241,17 @@
         if (snapshot.val() === true && local.get('studyJoined') === '1') upsertStudyMember(true);
       });
 
-      studyChatQuery.on('value', snapshot => {
-        state.studyChatMessages = [];
-        snapshot.forEach(child => state.studyChatMessages.push({ id: child.key, ...(child.val() || {}) }));
+      studyChatLegacyQuery.on('value', snapshot => {
+        // Xóa bản legacy cũ khỏi bộ nhớ trước khi nạp lại, giữ nguyên tin mới trong confessions.
+        Array.from(state.studyChatMessages.keys()).forEach(key => {
+          if (String(key).startsWith('legacy:')) state.studyChatMessages.delete(key);
+        });
+        snapshot.forEach(child => upsertStudyChatRecord(child.key, child.val() || {}, 'legacy'));
         renderStudyChat();
-      }, error => showListenerError('study-chat', error, 'Không thể tải trò chuyện phòng học.'));
+      }, error => {
+        // Chat mới vẫn hoạt động kể cả khi nhánh lịch sử cũ không đọc được.
+        console.warn('Không thể tải lịch sử chat cũ:', error);
+      });
 
       updateStudyTimer();
       updateStudyChatComposerUI();
